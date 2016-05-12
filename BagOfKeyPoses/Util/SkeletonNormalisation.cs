@@ -6,13 +6,13 @@ using System.Diagnostics;
 
 namespace Util
 {
-    
-
     public static class SkeletonNormalisation
     {
         private static int nbJointRightShoulder = 1, nbJointLeftShoulder = 2, nbJointNeck = 3, nbJointTorso = 4, nbJointRightHip = 5, nbJointLeftHip = 6;
 
-        //Entry point for the validation, normalisation and rotation of a sequence.
+        /// <summary>
+        /// Entry point for the validation, normalisation and rotation of a sequence.
+        /// </summary>
         public static List<double[]> normaliseSequenceSkeleton(List<double[]> sequence)
         {
            List<double[]> modifiedSequence = validateSequence(sequence);

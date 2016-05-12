@@ -7,8 +7,14 @@ using Util;
 using Sequence = System.Collections.Generic.List<double[]>;
 using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.List<System.Collections.Generic.List<double[]>>>;
 
+
+//TODO : Rename all initTrainAndTestData methods
+
 namespace Parser
 {
+    /// <summary>
+    /// Represents the dataset and contains several functions to manipulate the datas.
+    /// </summary>
     public class Dataset
     {
         public System.Collections.Generic.List<Parser.DatasetEntry> Datas;
@@ -21,6 +27,17 @@ namespace Parser
             this.Datas = datas;
             this.Labels = labels;
             this.Subjects = subjects;
+        }
+
+        public void normaliseSkeletons()
+        {
+            for (int i = Datas.Count - 1; i > 0; i--)
+            {
+                DatasetEntry entry = Datas[i];
+                entry.Sequence = SkeletonNormalisation.normaliseSequenceSkeleton(entry.Sequence);
+                if (entry.Sequence.Count == 0)
+                    Datas.Remove(entry);
+            }
         }
 
         public List<Sequence> getByLabel(string label)
@@ -51,36 +68,6 @@ namespace Parser
         public string getRandomLabel()
         {
             return Labels[rand.Next(0, Labels.Count - 1)];
-        } 
-
-        private TrainDataType getAllExcludingOneSubject(string subject)
-        {
-            TrainDataType data = new TrainDataType();
-
-            foreach (DatasetEntry entry in Datas)
-            {
-                if (subject != entry.Subject)
-                {
-                    data[entry.Label].Add(entry.Sequence);
-                }
-            }
-
-            return data;
-        }
-
-        private TrainDataType getAllExcludingOneSequence(Sequence sequence)
-        {
-            TrainDataType data = new TrainDataType();
-
-            foreach (DatasetEntry entry in Datas)
-            {
-                if (sequence != entry.Sequence)
-                {
-                    data[entry.Label].Add(entry.Sequence);
-                }
-            }
-
-            return data;
         }
 
         public TrainDataType getPercentTrainData(double percent)
@@ -100,9 +87,7 @@ namespace Parser
             return data;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public void initTrainAndTestData(out TrainDataType trainData, out TrainDataType testData)
         {
             trainData = new TrainDataType();
@@ -149,12 +134,12 @@ namespace Parser
             }
         }
 
-        public void initTrainAndTestData(string subject, out TrainDataType trainData, out TrainDataType testData)
+        public void initTrainAndTestData(string testedSubject, out TrainDataType trainData, out TrainDataType testData)
         {
             trainData = new TrainDataType();
             testData = new TrainDataType();
 
-            trainData = getAllExcludingOneSubject(subject);
+            trainData = getAllExcludingOneSubject(testedSubject);
 
             for (int i = 0; i < Datas.Count; i++)
             {
@@ -202,12 +187,45 @@ namespace Parser
             }
         }
 
+        private TrainDataType getAllExcludingOneSubject(string subject)
+        {
+            TrainDataType data = new TrainDataType();
+
+            foreach (DatasetEntry entry in Datas)
+            {
+                if (subject != entry.Subject)
+                {
+                    data[entry.Label].Add(entry.Sequence);
+                }
+            }
+
+            return data;
+        }
+
+        private TrainDataType getAllExcludingOneSequence(Sequence sequence)
+        {
+            TrainDataType data = new TrainDataType();
+
+            foreach (DatasetEntry entry in Datas)
+            {
+                if (sequence != entry.Sequence)
+                {
+                    data[entry.Label].Add(entry.Sequence);
+                }
+            }
+
+            return data;
+        }
+
         public DatasetEntry getRandomEntry()
         {
             return Datas[rand.Next(0, Datas.Count-1)];
         }
     }
 
+    /// <summary>
+    /// Represents an element of the dataset.
+    /// </summary>
     public class DatasetEntry
     {
         public string Label;
@@ -231,6 +249,11 @@ namespace Parser
 
     public static class DatasetParser
     {
+        /// <summary>
+        /// Read a sequence by storing the joints of each skeleton
+        /// </summary>
+        /// <param name="nbOfJoints">The number of joints of a skeleton</param>
+        /// <param name="separator">Separator between each coordinate of the skeleton's joints in the files</param>
         private static Sequence readSequenceSkeleton(int nbOfJoints, string filename, char separator)
         {
             int coordsDim = 3;
@@ -261,6 +284,11 @@ namespace Parser
             return sequence;
         }
 
+        /// <summary>
+        /// Load the MSR dataset from the given folder.
+        /// </summary>
+        /// <param name="nbOfJoints">The number of joints of a skeleton</param>
+        /// <param name="separator">Separator between each coordinate of the skeleton's joints in the files</param>
         public static Dataset loadDatasetSkeleton(int nbOfJoints, string foldername, char separator)
         {
             List<DatasetEntry> datas = new List<DatasetEntry>();
@@ -268,8 +296,10 @@ namespace Parser
             List<string> subjects = new List<string>();
 
             string[] filePaths = System.IO.Directory.GetFiles(foldername);
+            
             foreach (string file in filePaths)
             {
+                //System.IO.Path.GetFileName(file);
                 string filename = file.Split('\\').Last();
                 string[] fields = filename.Split('_');
 
