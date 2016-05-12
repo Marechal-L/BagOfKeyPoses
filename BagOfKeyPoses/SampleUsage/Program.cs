@@ -19,7 +19,8 @@ using System.Linq;
 using System.Text;
 using Util;
 using BagOfKeyPoses;
-using Parser; 
+using Parser;
+using Validator;
 using Sequence = System.Collections.Generic.List<double[]>;
 using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.List<System.Collections.Generic.List<double[]>>>;
 
@@ -45,7 +46,7 @@ namespace SampleUsage
 
             Console.ReadKey();
         }
-        
+
         /// <summary>
         /// This sample shows how to load the dataset from a directory and to perform a cross validation. 
         /// </summary>
@@ -68,163 +69,18 @@ namespace SampleUsage
             learning_params.InitialK = 8;
             learning_params.FeatureSize = nbOfJoints * 3;
 
-            double average = 0;
-
+            //confusionMatrix
+      
             /*average = atRandom(dataset, learning_params);
             Console.WriteLine("AtRandom : " + average);
             average = leaveOneActorOut(dataset, learning_params);
             Console.WriteLine("leaveOneActorOut : " + average);
             average = leaveOneSequenceOut(dataset, learning_params);
             Console.WriteLine("leaveOneSequenceOut : " + average);*/
-            average = twoFoldHalfActors(dataset, learning_params);
-            Console.WriteLine("twoFoldHalfActors : " + average);
+            ResultSet result = ValidationTest.twoFoldHalfActors(dataset, learning_params, 1);
+            Console.WriteLine("twoFoldHalfActors : " + 0);
             //average = twoFoldActorsTrainingSet(dataset, learning_params, new string[]{ "s01", "s03", "s05", "s07", "s09" });
             //Console.WriteLine("twoFoldActorsTrainingSet : " + average);
-
-
-        }
-
-        /// <summary>
-        /// Performs a cross validation at random on the given dataset.
-        /// </summary>
-        private static double atRandom(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
-        {
-            Console.WriteLine("Cross Validation at Random");
-
-            TrainDataType trainData, testData;
-
-            double average = 0;
-            for (int i = 0; i < nbOfRounds; i++)
-            {
-                Console.WriteLine("Data extraction...");
-                dataset.initTrainAndTestData(50, out trainData, out testData);
-                average += crossValidation(learning_params, trainData, testData);
-            }
-
-            
-            average /= nbOfRounds;
-            return average;
-        }
-
-        /// <summary>
-        /// Performs a leave-One-Actor-Out (LOAO) cross validation on the given dataset.
-        /// </summary>
-        private static double leaveOneActorOut(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
-        {
-            Console.WriteLine("Cross Validation LOAO");
-
-            TrainDataType trainData, testData;
-
-            double average = 0;
-            for (int i = 0; i < nbOfRounds; i++)
-            {
-                Console.WriteLine("Data extraction...");
-                string subject = dataset.getRandomSubject();
-                dataset.initTrainAndTestData(subject, out trainData, out testData);
-                average += crossValidation(learning_params, trainData, testData);
-            }
-
-           
-            average /= nbOfRounds;
-            return average;
-        }
-
-        /// <summary>
-        /// Performs a 2-fold cross validation on the given dataset, randomly choose the half of actors for training.
-        /// </summary>
-        private static double twoFoldHalfActors(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
-        {
-            Console.WriteLine("Cross Validation 2-fold half actors");
-            
-            TrainDataType trainData, testData;
-
-            double average = 0;
-            for (int i = 0; i < nbOfRounds; i++)
-            {
-                Console.WriteLine("Data extraction...");
-
-                dataset.initTrainAndTestData(out trainData, out testData);
-                average += crossValidation(learning_params, trainData, testData);
-                average += crossValidation(learning_params, testData, trainData);
-            }
-            
-            average /= nbOfRounds * 2;
-            return average;
-        }
-
-        /// <summary>
-        /// Performs a 2-fold cross validation on the given dataset, take the actors set given for training and the others for testing.
-        /// </summary>
-        private static double twoFoldActorsTrainingSet(Dataset dataset, LearningParams learning_params, string[] actorsTrainingSet, int nbOfRounds = 10)
-        {
-            Console.WriteLine("Cross Validation 2-fold training actors set");
-
-            TrainDataType trainData, testData;
-
-            double average = 0;
-            for (int i = 0; i < nbOfRounds; i++)
-            {
-                Console.WriteLine("Data extraction...");
-
-                dataset.initTrainAndTestData(actorsTrainingSet, out trainData, out testData);
-                average += crossValidation(learning_params, trainData, testData);
-                average += crossValidation(learning_params, testData, trainData);
-            }
-
-            average /= nbOfRounds * 2;
-            return average;
-        }
-
-        /// <summary>
-        /// Performs a leave-One-Sequence-Out (LOSO) cross validation on the given dataset.
-        /// </summary>
-        private static double leaveOneSequenceOut(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
-        {
-            Console.WriteLine("Cross Validation LOSO");
-
-            TrainDataType trainData, testData;
-
-            double average = 0;
-            for (int i = 0; i < nbOfRounds; i++)
-            {
-                Console.WriteLine("Data extraction...");
-                Sequence sequence = dataset.getRandomSequence();
-                dataset.initTrainAndTestData(sequence, out trainData, out testData);
-                average += crossValidation(learning_params, trainData, testData);
-            }
-            average /= nbOfRounds;
-            return average;
-        }
-
-        /// <summary>
-        ///  The core of the cross validation. Train the model and test it with the given parameters.
-        /// </summary>
-        private static double crossValidation(LearningParams learning_params, TrainDataType trainData, TrainDataType testData)
-        {
-            //Cross Validation
-            double nbTests = 0, roundSuccess = 0;
-
-            Console.WriteLine("Training...");
-            BoKP bokp = new BoKP(learning_params);
-            bokp.Train(trainData.Dictionary);
-
-            Console.WriteLine("Testing...");
-            foreach (string label in learning_params.ClassLabels)
-            {
-                foreach (var sequence in testData[label])
-                {
-                    nbTests++;
-                    string recognition = bokp.EvaluateSequence(sequence);
-                    if (label == recognition)
-                    {
-                        roundSuccess++;
-                    }
-                }
-            }
-
-            double res = (roundSuccess / nbTests) * 100;
-            Console.WriteLine("Success : " + res);
-            return res;
         }
 
         /// <summary>

@@ -12,3 +12,10 @@ C:\Users\Portable\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\bin\Debug\
 C:\Users\Portable\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\obj\Debug\BagOfKeyPoses.csprojResolveAssemblyReference.cache
 C:\Users\Portable\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\obj\Debug\BagOfKeyPoses.dll
 C:\Users\Portable\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\obj\Debug\BagOfKeyPoses.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\bin\Debug\BagOfKeyPoses.dll
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\bin\Debug\BagOfKeyPoses.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\bin\Debug\Util.dll
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\bin\Debug\Util.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\obj\Debug\BagOfKeyPoses.csprojResolveAssemblyReference.cache
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\obj\Debug\BagOfKeyPoses.dll
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\BagOfKeyPoses\obj\Debug\BagOfKeyPoses.pdb

@@ -19,3 +19,17 @@ C:\Users\Portable\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\obj\x86\Debu
 C:\Users\Portable\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\obj\x86\Debug\SampleUsage.pdb
 C:\Users\Portable\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\Parser.dll
 C:\Users\Portable\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\Parser.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\SampleUsage.exe.config
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\SampleUsage.exe
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\SampleUsage.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\BagOfKeyPoses.dll
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\Parser.dll
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\Util.dll
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\BagOfKeyPoses.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\Parser.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\Util.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\obj\x86\Debug\SampleUsage.csprojResolveAssemblyReference.cache
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\obj\x86\Debug\SampleUsage.exe
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\obj\x86\Debug\SampleUsage.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\ClassLibrary1.dll
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\ClassLibrary1.pdb
