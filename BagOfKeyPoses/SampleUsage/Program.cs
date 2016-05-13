@@ -39,7 +39,6 @@ namespace SampleUsage
             sequenceBasedSimpleSample();
             sequenceBasedAdvancedSample();
             continuousRecognitionSample();
-            
             */
 
             datasetLoadingAndValidationSample();
@@ -56,7 +55,7 @@ namespace SampleUsage
 
             Console.WriteLine("Dataset loading...");
 
-            //Load Dataset Skeletons
+            //Load Dataset of Skeletons
             Dataset dataset = DatasetParser.loadDatasetSkeleton(nbOfJoints, "../../../AS1", ' ');
 
             //Normalisation
@@ -80,9 +79,8 @@ namespace SampleUsage
 
             /*result = ValidationTest.twoFoldHalfActors(dataset, learning_params, 1);
             Console.WriteLine("TwoFoldHalfActors results : " + result);*/
-            
 
-            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" });
+            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },5);
             Console.WriteLine("twoFoldActorsTrainingSet results : " + result);
            
         }

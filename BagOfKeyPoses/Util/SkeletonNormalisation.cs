@@ -57,9 +57,7 @@ namespace Util
                 double normDistance = 0.0;
                 for (int j = 0; j < skeleton.Length; j += 3)
                 {
-                    double[] pjoint = new double[] { skeleton[j], skeleton[j+1], skeleton[j+2] };
- 
-                    //Not the same size
+                    double[] pjoint = new double[] { skeleton[j], skeleton[j+1], skeleton[j+2] };                  
                     normDistance += Functions.EuclideanDistance(origin, pjoint);
                 }
 
@@ -67,17 +65,9 @@ namespace Util
 
                 for (int j = 0; j < skeleton.Length; j += 3)
                 {
-                    double[] pjoint = new double[] { skeleton[j], skeleton[j + 1], skeleton[j + 2] };
-                    double[] trans = new double[] { 0, 0, 0 };
-
-                    trans[0] = (float)((pjoint[0] - origin[0]) / normDistance);
-                    trans[1] = (float)((pjoint[1] - origin[1]) / normDistance);
-                    trans[2] = (float)((pjoint[2] - origin[2]) / normDistance);
-
-                    skeleton[j] = trans[0];
-                    skeleton[j+1] = trans[1];
-                    skeleton[j+2] = trans[2];
-
+                    skeleton[j] = (float)((skeleton[j] - origin[0]) / normDistance);
+                    skeleton[j + 1] = (float)((skeleton[j + 1] - origin[1]) / normDistance);
+                    skeleton[j + 2] = (float)((skeleton[j + 2] - origin[2]) / normDistance);  
                 }
                 normalisedSequence.Add(skeleton);
             }

@@ -31,5 +31,5 @@ H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\Util.pdb
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\obj\x86\Debug\SampleUsage.csprojResolveAssemblyReference.cache
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\obj\x86\Debug\SampleUsage.exe
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\obj\x86\Debug\SampleUsage.pdb
-H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\ClassLibrary1.dll
-H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\ClassLibrary1.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\Validator.dll
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\SampleUsage\bin\Debug\Validator.pdb

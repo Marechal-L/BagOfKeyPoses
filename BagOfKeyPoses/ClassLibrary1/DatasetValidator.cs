@@ -14,17 +14,21 @@ namespace Validator
     {
         public int[] TestsPerLabels, SuccessesPerLabels;
         public double TotalTests, TotalSuccesses;
+        
 
         private double[,] confusionMatrix;
         private List<string> labels;
-        private Boolean matrixComputed;
+        private Boolean matrixComputed, averageComputed;
+        private double average;
+        
 
         public ResultSet(List<string> label)
         {
             this.labels = label;
-            matrixComputed = false;
+            matrixComputed = averageComputed = false;
             TotalTests = 0;
             TotalSuccesses = 0;
+            average = 0;
 
             
             int nbOfLabels = labels.Count;
@@ -44,7 +48,11 @@ namespace Validator
 
         public double getAverage()
         {
-            return (TotalSuccesses / TotalTests) * 100;
+            if (!averageComputed)
+            {
+                computeAverage();
+            }
+            return average * 100;
         }
 
         public void saveTest(string testedLabel, string recognizedLabel)
@@ -59,6 +67,7 @@ namespace Validator
             {
                 SuccessesPerLabels[testIndex] += 1;
                 TotalSuccesses++;
+                average++;
             }
 
             confusionMatrix[testIndex, resultIndex] += 1;
@@ -71,40 +80,41 @@ namespace Validator
                 for (int j = 0; j < confusionMatrix.Length / labels.Count; j++)
                 {
                     confusionMatrix[i, j] /= TestsPerLabels[i];
-                    confusionMatrix[i, j] *= 100;
                 }
             }
 
             matrixComputed = true;
         }
 
-        public static ResultSet operator +(ResultSet r1, ResultSet r2)
+        public void computeAverage()
         {
-            ResultSet res = new ResultSet(r1.labels);
+            average /= TotalTests;
 
-            res.TotalTests = r1.TotalTests + r2.TotalTests;
-            res.TotalSuccesses = r1.TotalSuccesses + r2.TotalSuccesses;
-
-            for (int i = 0; i < res.labels.Count; i++)
+            for (int i = 0; i < confusionMatrix.Length / labels.Count; i++)
             {
-                res.TestsPerLabels[i] = r1.TestsPerLabels[i] + r2.TestsPerLabels[i];
-                res.SuccessesPerLabels[i] = r1.SuccessesPerLabels[i] + r2.SuccessesPerLabels[i];
+                for (int j = 0; j < confusionMatrix.Length / labels.Count; j++)
+                {
+                    confusionMatrix[i, j] /= TotalTests;
+                }
             }
 
-            r1.computeConfusionMatrix();
-            r2.computeConfusionMatrix();
+            averageComputed = true;
+            matrixComputed = true;
+        }
 
-            for (int i = 0; i < res.confusionMatrix.Length / res.labels.Count; i++)
-			{
-			    for (int j = 0; j < res.confusionMatrix.Length / res.labels.Count; j++)
-			    {
-                    res.confusionMatrix[i, j] = (r1.confusionMatrix[i, j] + r2.confusionMatrix[i, j]) / 2; 
-			    } 
-			}
+        public void add(ResultSet r)
+        {
+            average += r.average;
 
-            res.matrixComputed = true;
+            for (int i = 0; i < confusionMatrix.Length / labels.Count; i++)
+            {
+                for (int j = 0; j < confusionMatrix.Length / labels.Count; j++)
+                {
+                    confusionMatrix[i, j] += r.confusionMatrix[i, j];
+                }
+            }
 
-            return res;
+            TotalTests++;
         }
 
         public override string ToString()
@@ -172,7 +182,7 @@ namespace Validator
         {
             Console.WriteLine("Cross Validation 2-fold half actors");
 
-            ResultSet resultSet1 = null, resultSet2 = null;          
+            ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);       
             TrainDataType trainData, testData;
 
             nbOfRounds = (nbOfRounds <= 0) ? 1 : nbOfRounds;
@@ -181,12 +191,17 @@ namespace Validator
                 Console.WriteLine("Data extraction...");
 
                 dataset.initTrainAndTestData(out trainData, out testData);
-                resultSet1 = crossValidationResultSet(learning_params, trainData, testData);
-                resultSet2 = crossValidationResultSet(learning_params, testData, trainData);
+
+                tmp = crossValidationResultSet(learning_params, trainData, testData);
+                Console.WriteLine("Average : " + tmp.getAverage());
+                globalResult.add(tmp);
+
+                tmp = crossValidationResultSet(learning_params, testData, trainData);
+                Console.WriteLine("Average : " + tmp.getAverage());
+                globalResult.add(tmp);
             }
 
-            ResultSet resultSet = resultSet1 + resultSet2;
-            return resultSet;
+            return globalResult;
         }
 
         /// <summary>
@@ -196,7 +211,8 @@ namespace Validator
         {
             Console.WriteLine("Cross Validation 2-fold training actors set");
 
-            ResultSet resultSet1 = null, resultSet2 = null, tmp = null;
+
+            ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
 
             nbOfRounds = (nbOfRounds <= 0) ? 1 : nbOfRounds;
@@ -207,18 +223,17 @@ namespace Validator
                 dataset.initTrainAndTestData(actorsTrainingSet, out trainData, out testData);
 
                 tmp = crossValidationResultSet(learning_params, trainData, testData);
-                resultSet1 = (resultSet1 == null) ? tmp : resultSet1 += tmp;
+                Console.WriteLine("Average : " + tmp.getAverage());
+                globalResult.add(tmp);
 
-                Console.WriteLine("Average : " + resultSet1.getAverage());
-
-                tmp = crossValidationResultSet(learning_params, trainData, testData);
-                resultSet2 = (resultSet2 == null) ? tmp : resultSet2 += tmp;
-
-                Console.WriteLine("Average : " + resultSet2.getAverage());
+                tmp = crossValidationResultSet(learning_params, testData, trainData);
+                Console.WriteLine("Average : " + tmp.getAverage());
+                globalResult.add(tmp);
             }
 
-            ResultSet resultSet = resultSet1 + resultSet2;
-            return resultSet;
+            globalResult.computeAverage();
+
+            return globalResult;
         }
 
         private static ResultSet crossValidationResultSet(LearningParams learning_params, TrainDataType trainData, TrainDataType testData)

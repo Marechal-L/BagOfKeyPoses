@@ -1,5 +1,3 @@
-H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\bin\Debug\ClassLibrary1.dll
-H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\bin\Debug\ClassLibrary1.pdb
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\bin\Debug\BagOfKeyPoses.dll
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\bin\Debug\Parser.dll
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\bin\Debug\Util.dll
@@ -7,5 +5,7 @@ H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\bin\Debug\BagOfKeyPoses.p
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\bin\Debug\Parser.pdb
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\bin\Debug\Util.pdb
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\obj\Debug\Validator.csprojResolveAssemblyReference.cache
-H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\obj\Debug\ClassLibrary1.dll
-H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\obj\Debug\ClassLibrary1.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\bin\Debug\Validator.dll
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\bin\Debug\Validator.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\obj\Debug\Validator.dll
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\ClassLibrary1\obj\Debug\Validator.pdb
