@@ -69,7 +69,7 @@ namespace SampleUsage
             learning_params.InitialK = 8;
             learning_params.FeatureSize = nbOfJoints * 3;
 
-            //confusionMatrix
+            ResultSet result = null;
       
             /*average = atRandom(dataset, learning_params);
             Console.WriteLine("AtRandom : " + average);
@@ -77,10 +77,14 @@ namespace SampleUsage
             Console.WriteLine("leaveOneActorOut : " + average);
             average = leaveOneSequenceOut(dataset, learning_params);
             Console.WriteLine("leaveOneSequenceOut : " + average);*/
-            ResultSet result = ValidationTest.twoFoldHalfActors(dataset, learning_params, 1);
-            Console.WriteLine("twoFoldHalfActors : " + 0);
-            //average = twoFoldActorsTrainingSet(dataset, learning_params, new string[]{ "s01", "s03", "s05", "s07", "s09" });
-            //Console.WriteLine("twoFoldActorsTrainingSet : " + average);
+
+            /*result = ValidationTest.twoFoldHalfActors(dataset, learning_params, 1);
+            Console.WriteLine("TwoFoldHalfActors results : " + result);*/
+            
+
+            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" });
+            Console.WriteLine("twoFoldActorsTrainingSet results : " + result);
+           
         }
 
         /// <summary>

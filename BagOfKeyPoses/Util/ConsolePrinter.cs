@@ -9,8 +9,10 @@ namespace Util
     {
         static int tableWidth = 50;
 
-        public static void PrintArray(double[,] array, List<string> verticalLabels, List<string> horizontalLabels = null)
+        public static string getArrayString(double[,] array, List<string> verticalLabels, List<string> horizontalLabels = null)
         {
+            string s = "";
+
             tableWidth = verticalLabels.Count * 7;
             int tableHeadPadding = 0;
 
@@ -25,18 +27,18 @@ namespace Util
             }
             tableHeadPadding += 3;
 
-            Console.Write(new string(' ', tableHeadPadding));
-            PrintLine();
-            Console.Write(new string(' ', tableHeadPadding));
-            PrintRow(verticalLabels);
-            Console.Write(new string(' ', tableHeadPadding));
-            PrintLine();
+            s += new string(' ', tableHeadPadding);
+            s += PrintLine();
+            s += new string(' ', tableHeadPadding);
+            s += PrintRow(verticalLabels);
+            s += new string(' ', tableHeadPadding);
+            s += PrintLine();
 
             for (int i = 0; i < array.Length / verticalLabels.Count; i++)
             {
                 string line = "";
                 if (horizontalLabels != null)
-                    PrintHorizontalLabel(horizontalLabels[i]);
+                    s += PrintHorizontalLabel(horizontalLabels[i]);
                 for (int j = 0; j < array.Length / verticalLabels.Count; j++)
                 {
                     if (j == array.Length / 2 - 1)
@@ -47,17 +49,18 @@ namespace Util
                 List<string> splitted = line.Split(';').ToList<string>();
                 splitted.RemoveAt(splitted.Count-1);
 
-                PrintRow(splitted);
+                s += PrintRow(splitted);
             }
 
+            return s;
         }
 
-        static void PrintLine()
+        static string PrintLine()
         {
-            Console.WriteLine(new string('-', tableWidth));
+            return new string('-', tableWidth)+"\n";
         }
 
-        static void PrintRow(List<string> columns)
+        static string PrintRow(List<string> columns)
         {
             int width = (tableWidth - columns.Count) / columns.Count;
             string row = "|";
@@ -67,17 +70,17 @@ namespace Util
                 row += AlignCentre(column, width) + "|";
             }
 
-            Console.WriteLine(row);
+            return row + "\n";
         }
 
-        static void PrintHorizontalLabel(string label)
+        static string PrintHorizontalLabel(string label)
         {
             int width = label.Length;
             string row = "|";
 
             row += AlignCentre(label, width) + "|";
 
-            Console.Write(row);
+            return row;
         }
 
         static string AlignCentre(string text, int width)

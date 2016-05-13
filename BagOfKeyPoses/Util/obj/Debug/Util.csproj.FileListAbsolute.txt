@@ -12,3 +12,4 @@ H:\Documents\BagOfKeyPoses\BagOfKeyPoses\Util\bin\Debug\Util.dll
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\Util\bin\Debug\Util.pdb
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\Util\obj\Debug\Util.dll
 H:\Documents\BagOfKeyPoses\BagOfKeyPoses\Util\obj\Debug\Util.pdb
+H:\Documents\BagOfKeyPoses\BagOfKeyPoses\Util\obj\Debug\Util.csprojResolveAssemblyReference.cache
