@@ -8,5 +8,6 @@
 
 *.exe
 *.bin
-/obj/*
-/bin/*
+*.user
+/obj
+/bin
