@@ -133,6 +133,15 @@ namespace Validator
 
             return s;
         }
+
+        public void fileOutput(string filename)
+        {
+            System.IO.File.Create(filename).Close();
+
+            System.IO.StreamWriter writer = new System.IO.StreamWriter(filename);
+            writer.Write(this);
+            writer.Close();
+        }
     }
 
     public static class ValidationTest
@@ -262,7 +271,9 @@ namespace Validator
                 }
             }
 
+#if DEBUG
             Console.WriteLine(resultSet);
+#endif
 
             return resultSet;
         }

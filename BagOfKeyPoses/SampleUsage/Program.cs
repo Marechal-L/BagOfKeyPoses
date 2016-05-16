@@ -29,9 +29,6 @@ using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.L
 
 
 //TODO : Explain the meaning of each test functions (leaveOneActorOut) and the effects of each parameters.
-//       Create a confusion matrix from the results.
-
-
 
 namespace SampleUsage
 {
@@ -93,6 +90,7 @@ namespace SampleUsage
             Console.Write("twoFoldActorsTrainingSet : ");
 #endif
             Console.WriteLine(result);
+            result.fileOutput("result1.log");
         }
 
         /// <summary>

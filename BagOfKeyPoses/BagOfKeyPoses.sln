@@ -14,7 +14,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parser", "Parser\Parser.csp
 		{3ACCD24A-1291-4C81-A658-7EC38C777B3D} = {3ACCD24A-1291-4C81-A658-7EC38C777B3D}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Validator", "ClassLibrary1\Validator.csproj", "{81F8E358-9FB0-46F0-89CB-D469D43F1510}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Validator", "Validator\Validator.csproj", "{81F8E358-9FB0-46F0-89CB-D469D43F1510}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

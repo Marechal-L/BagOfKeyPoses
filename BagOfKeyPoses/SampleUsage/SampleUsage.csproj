@@ -69,10 +69,6 @@
       <Project>{24CDD5CE-48FC-40D5-A909-658721A11708}</Project>
       <Name>BagOfKeyPoses</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ClassLibrary1\Validator.csproj">
-      <Project>{81f8e358-9fb0-46f0-89cb-d469d43f1510}</Project>
-      <Name>Validator</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Parser\Parser.csproj">
       <Project>{af6ce7ed-96d5-46c4-86b0-9fa4cf4304b7}</Project>
       <Name>Parser</Name>
@@ -80,6 +76,10 @@
     <ProjectReference Include="..\Util\Util.csproj">
       <Project>{3ACCD24A-1291-4C81-A658-7EC38C777B3D}</Project>
       <Name>Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Validator\Validator.csproj">
+      <Project>{81f8e358-9fb0-46f0-89cb-d469d43f1510}</Project>
+      <Name>Validator</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
