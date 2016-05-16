@@ -14,23 +14,23 @@ namespace Validator
     {
         public int[] TestsPerLabels, SuccessesPerLabels;
         public double TotalTests, TotalSuccesses;
-        
 
         private double[,] confusionMatrix;
         private List<string> labels;
-        private Boolean matrixComputed, averageComputed;
-        private double average;
-        
+        private bool isGlobalResultSet;
 
-        public ResultSet(List<string> label)
+        public ResultSet()
         {
-            this.labels = label;
-            matrixComputed = averageComputed = false;
             TotalTests = 0;
             TotalSuccesses = 0;
-            average = 0;
+            isGlobalResultSet = false;
+        }
 
-            
+        public ResultSet(List<string> label)
+            :this()
+        {
+            this.labels = label;
+          
             int nbOfLabels = labels.Count;
             TestsPerLabels = new int[nbOfLabels];
             SuccessesPerLabels = new int[nbOfLabels];
@@ -39,20 +39,43 @@ namespace Validator
 
         public double[,] getConfusionMatrix()
         {
-            if (!matrixComputed)
+
+            if (isGlobalResultSet)
             {
-                computeConfusionMatrix();
+                double[,] tmp = new double[labels.Count, labels.Count];
+
+                for (int i = 0; i < tmp.Length / labels.Count; i++)
+                {
+                    for (int j = 0; j < tmp.Length / labels.Count; j++)
+                    {
+                        if (isGlobalResultSet)
+                            tmp[i, j] = (confusionMatrix[i, j] / TotalTests);
+                    }
+                }
+                return tmp;
             }
-            return confusionMatrix;
+            else
+                return confusionMatrix;
+        }
+
+        public double[,] getConfusionMatrixPercent()
+        {
+            double[,] tmp = new double[labels.Count,labels.Count];
+
+            for (int i = 0; i < tmp.Length / labels.Count; i++)
+            {
+                for (int j = 0; j < tmp.Length / labels.Count; j++)
+                {
+                    tmp[i,j] = (confusionMatrix[i,j] / TestsPerLabels[i])*100;
+                }
+            }
+
+            return tmp;
         }
 
         public double getAverage()
         {
-            if (!averageComputed)
-            {
-                computeAverage();
-            }
-            return average * 100;
+            return TotalSuccesses / TotalTests;
         }
 
         public void saveTest(string testedLabel, string recognizedLabel)
@@ -67,50 +90,22 @@ namespace Validator
             {
                 SuccessesPerLabels[testIndex] += 1;
                 TotalSuccesses++;
-                average++;
             }
 
             confusionMatrix[testIndex, resultIndex] += 1;
         }
 
-        private void computeConfusionMatrix()
+        public void addResult(ResultSet r)
         {
-            for (int i = 0; i < confusionMatrix.Length / labels.Count; i++)
-            {
-                for (int j = 0; j < confusionMatrix.Length / labels.Count; j++)
-                {
-                    confusionMatrix[i, j] /= TestsPerLabels[i];
-                }
-            }
+            isGlobalResultSet = true;
 
-            matrixComputed = true;
-        }
-
-        public void computeAverage()
-        {
-            average /= TotalTests;
+            TotalSuccesses += r.getAverage();
 
             for (int i = 0; i < confusionMatrix.Length / labels.Count; i++)
             {
                 for (int j = 0; j < confusionMatrix.Length / labels.Count; j++)
                 {
-                    confusionMatrix[i, j] /= TotalTests;
-                }
-            }
-
-            averageComputed = true;
-            matrixComputed = true;
-        }
-
-        public void add(ResultSet r)
-        {
-            average += r.average;
-
-            for (int i = 0; i < confusionMatrix.Length / labels.Count; i++)
-            {
-                for (int j = 0; j < confusionMatrix.Length / labels.Count; j++)
-                {
-                    confusionMatrix[i, j] += r.confusionMatrix[i, j];
+                    confusionMatrix[i, j] += r.getConfusionMatrixPercent()[i, j];
                 }
             }
 
@@ -121,10 +116,20 @@ namespace Validator
         {
             string s = "\n";
 
-            s += "\t Average : "+getAverage()+"%\n";
+            s += "\t Average : "+getAverage()*100+"%\n";
 
-            s += "\t Confusion Matrix (%) : \n";
-            s += ConsolePrinter.getArrayString(getConfusionMatrix(), labels, labels);
+            if (isGlobalResultSet)
+            { 
+                s += "\t Confusion Matrix (%) : \n";
+                s += ConsolePrinter.getArrayString(getConfusionMatrix(), labels, labels);
+            }
+            else
+            {
+                s += "\t Confusion Matrix (numbers) : \n";
+                s += ConsolePrinter.getArrayString(getConfusionMatrix(), labels, labels);
+                s += "\t Confusion Matrix (%) : \n";
+                s += ConsolePrinter.getArrayString(getConfusionMatrixPercent(), labels, labels);
+            }
 
             return s;
         }
@@ -139,7 +144,7 @@ namespace Validator
         {
             Console.WriteLine("Cross Validation at Random");
 
-            ResultSet resultSet = null;
+            ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
 
             nbOfRounds = (nbOfRounds <= 0) ? 1 : nbOfRounds;
@@ -147,10 +152,12 @@ namespace Validator
             {
                 Console.WriteLine("Data extraction...");
                 dataset.initTrainAndTestData(50, out trainData, out testData);
-                resultSet = crossValidationResultSet(learning_params, trainData, testData);
+                tmp = crossValidationResultSet(learning_params, trainData, testData);
+                Console.WriteLine("Average : " + tmp.getAverage());
+                globalResult.addResult(tmp); 
             }
 
-            return resultSet;
+            return globalResult;
         }
 
         /// <summary>
@@ -160,7 +167,7 @@ namespace Validator
         {
             Console.WriteLine("Cross Validation LOAO");
 
-            ResultSet resultSet = null;
+            ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
 
             nbOfRounds = (nbOfRounds <= 0) ? 1 : nbOfRounds;
@@ -169,10 +176,12 @@ namespace Validator
                 Console.WriteLine("Data extraction...");
                 string subject = dataset.getRandomSubject();
                 dataset.initTrainAndTestData(subject, out trainData, out testData);
-                resultSet = crossValidationResultSet(learning_params, trainData, testData);
+                tmp = crossValidationResultSet(learning_params, trainData, testData);
+                Console.WriteLine("Average : " + tmp.getAverage());
+                globalResult.addResult(tmp);
             }
 
-            return resultSet;
+            return globalResult;
         }
 
         /// <summary>
@@ -194,11 +203,11 @@ namespace Validator
 
                 tmp = crossValidationResultSet(learning_params, trainData, testData);
                 Console.WriteLine("Average : " + tmp.getAverage());
-                globalResult.add(tmp);
+                globalResult.addResult(tmp);
 
                 tmp = crossValidationResultSet(learning_params, testData, trainData);
                 Console.WriteLine("Average : " + tmp.getAverage());
-                globalResult.add(tmp);
+                globalResult.addResult(tmp);
             }
 
             return globalResult;
@@ -224,15 +233,13 @@ namespace Validator
 
                 tmp = crossValidationResultSet(learning_params, trainData, testData);
                 Console.WriteLine("Average : " + tmp.getAverage());
-                globalResult.add(tmp);
+                globalResult.addResult(tmp);
 
                 tmp = crossValidationResultSet(learning_params, testData, trainData);
                 Console.WriteLine("Average : " + tmp.getAverage());
-                globalResult.add(tmp);
+                globalResult.addResult(tmp);
             }
-
-            globalResult.computeAverage();
-
+ 
             return globalResult;
         }
 
@@ -251,9 +258,11 @@ namespace Validator
                 foreach (var sequence in testData[label])
                 {
                     string recognition = bokp.EvaluateSequence(sequence);
-                    resultSet.saveTest(label,recognition);
+                    resultSet.saveTest(label,recognition);                 
                 }
             }
+
+            Console.WriteLine(resultSet);
 
             return resultSet;
         }

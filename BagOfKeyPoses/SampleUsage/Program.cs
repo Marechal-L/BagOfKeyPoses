@@ -13,6 +13,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
+#define TWOFOLD
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,8 +27,11 @@ using Validator;
 using Sequence = System.Collections.Generic.List<double[]>;
 using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.List<System.Collections.Generic.List<double[]>>>;
 
+
 //TODO : Explain the meaning of each test functions (leaveOneActorOut) and the effects of each parameters.
 //       Create a confusion matrix from the results.
+
+
 
 namespace SampleUsage
 {
@@ -69,20 +75,24 @@ namespace SampleUsage
             learning_params.FeatureSize = nbOfJoints * 3;
 
             ResultSet result = null;
-      
-            /*average = atRandom(dataset, learning_params);
-            Console.WriteLine("AtRandom : " + average);
-            average = leaveOneActorOut(dataset, learning_params);
-            Console.WriteLine("leaveOneActorOut : " + average);
-            average = leaveOneSequenceOut(dataset, learning_params);
-            Console.WriteLine("leaveOneSequenceOut : " + average);*/
 
-            /*result = ValidationTest.twoFoldHalfActors(dataset, learning_params, 1);
-            Console.WriteLine("TwoFoldHalfActors results : " + result);*/
-
-            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },5);
-            Console.WriteLine("twoFoldActorsTrainingSet results : " + result);
-           
+#if RAND
+            result = ValidationTest.atRandom(dataset, learning_params);
+            Console.Write("AtRandom : ");
+#endif
+#if LOAO
+            result = ValidationTest.leaveOneActorOut(dataset, learning_params);
+            Console.Write("leaveOneActorOut : ");
+#endif
+#if TWOFOLD
+            result = ValidationTest.twoFoldHalfActors(dataset, learning_params);
+            Console.WriteLine("TwoFoldHalfActors : ");
+#endif
+#if TWOFOLDSET
+            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" });
+            Console.Write("twoFoldActorsTrainingSet : ");
+#endif
+            Console.WriteLine(result);
         }
 
         /// <summary>
