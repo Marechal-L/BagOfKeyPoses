@@ -171,8 +171,6 @@ namespace Validator
                 tmp = crossValidationResultSet(learning_params, trainData, testData);
                 Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
-
-                Console.WriteLine("GlobalResult : " + globalResult);
             }
 
             return globalResult;
@@ -198,7 +196,6 @@ namespace Validator
                 tmp = crossValidationResultSet(learning_params, trainData, testData);
                 Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
-
             }
 
             return globalResult;
@@ -267,8 +264,6 @@ namespace Validator
             List<DatasetEntry> entries = dataset.Datas;
             Shuffler.Shuffle(entries);
 
-
-
             for (int i = 0; i < entries.Count; i++)
             {
                 Console.WriteLine("Data extraction...");
@@ -278,8 +273,6 @@ namespace Validator
                 tmp = crossValidationResultSet(learning_params, trainData, testData);
                 Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
-
-                Console.WriteLine("GlobalResult : "+globalResult);
             }
 
             return globalResult;
