@@ -47,8 +47,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ContourSelection.cs" />
     <Compile Include="DatasetParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SkeletonNormalisation.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using Util;
 
-namespace Util
+namespace Parser
 {
     public static class SkeletonNormalisation
     {

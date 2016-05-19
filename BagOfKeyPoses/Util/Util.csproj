@@ -43,7 +43,6 @@
   <ItemGroup>
     <Compile Include="AssociativeMatrix.cs" />
     <Compile Include="ConsolePrinter.cs" />
-    <Compile Include="SkeletonNormalisation.cs" />
     <Compile Include="Shuffler.cs" />
     <Compile Include="Collections.cs" />
     <Compile Include="Functions.cs" />

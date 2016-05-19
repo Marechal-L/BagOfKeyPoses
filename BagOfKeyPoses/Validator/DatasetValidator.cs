@@ -48,8 +48,8 @@ namespace Validator
                 {
                     for (int j = 0; j < tmp.Length / labels.Count; j++)
                     {
-                        if (isGlobalResultSet)
-                            tmp[i, j] = (confusionMatrix[i, j] / TotalTests);
+                        if (isGlobalResultSet && TestsPerLabels[i] != 0)
+                            tmp[i, j] = (confusionMatrix[i, j] / TestsPerLabels[i]) * 100;
                     }
                 }
                 return tmp;
@@ -66,7 +66,8 @@ namespace Validator
             {
                 for (int j = 0; j < tmp.Length / labels.Count; j++)
                 {
-                    tmp[i,j] = (confusionMatrix[i,j] / TestsPerLabels[i])*100;
+                    if (TestsPerLabels[i] != 0)
+                        tmp[i, j] = (confusionMatrix[i, j] / TestsPerLabels[i]) * 100;
                 }
             }
 
@@ -101,11 +102,17 @@ namespace Validator
 
             TotalSuccesses += r.getAverage();
 
+            for (int i = 0; i < TestsPerLabels.Length; i++)
+            {
+                if (r.TestsPerLabels[i] != 0)
+                    TestsPerLabels[i] += 1;
+            }
+
             for (int i = 0; i < confusionMatrix.Length / labels.Count; i++)
             {
                 for (int j = 0; j < confusionMatrix.Length / labels.Count; j++)
                 {
-                    confusionMatrix[i, j] += r.getConfusionMatrixPercent()[i, j];
+                    confusionMatrix[i, j] += r.getConfusionMatrixPercent()[i, j] / 100;
                 }
             }
 
@@ -163,7 +170,9 @@ namespace Validator
                 dataset.initTrainAndTestData(50, out trainData, out testData);
                 tmp = crossValidationResultSet(learning_params, trainData, testData);
                 Console.WriteLine("Average : " + tmp.getAverage());
-                globalResult.addResult(tmp); 
+                globalResult.addResult(tmp);
+
+                Console.WriteLine("GlobalResult : " + globalResult);
             }
 
             return globalResult;
@@ -172,7 +181,7 @@ namespace Validator
         /// <summary>
         /// Performs a leave-One-Actor-Out (LOAO) cross validation on the given dataset.
         /// </summary>
-        public static ResultSet leaveOneActorOut(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
+        public static ResultSet leaveOneActorOutRandom(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
         {
             Console.WriteLine("Cross Validation LOAO");
 
@@ -185,9 +194,92 @@ namespace Validator
                 Console.WriteLine("Data extraction...");
                 string subject = dataset.getRandomSubject();
                 dataset.initTrainAndTestData(subject, out trainData, out testData);
+
                 tmp = crossValidationResultSet(learning_params, trainData, testData);
                 Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
+
+            }
+
+            return globalResult;
+        }
+
+        /// <summary>
+        /// </summary>
+        public static ResultSet leaveOneActorOut(Dataset dataset, LearningParams learning_params)
+        {
+            Console.WriteLine("Cross Validation LOAO");
+
+            ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
+            TrainDataType trainData, testData;
+
+            List<string> subjects = dataset.Subjects;
+            Shuffler.Shuffle(subjects);
+
+            
+            for (int i = 0; i < subjects.Count; i++)
+            {
+                Console.WriteLine("Data extraction...");
+                dataset.initTrainAndTestData(subjects[i], out trainData, out testData);
+
+                tmp = crossValidationResultSet(learning_params, trainData, testData);
+                Console.WriteLine("Average : " + tmp.getAverage());
+                globalResult.addResult(tmp);
+            }
+
+            return globalResult;
+        }
+
+        /// <summary>
+        /// Performs a leave-One-Sequence-Out (LOSO) cross validation on the given dataset.
+        /// </summary>
+        public static ResultSet leaveOneSequenceOutRandom(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
+        {
+            Console.WriteLine("Cross Validation LOSO");
+
+            ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
+            TrainDataType trainData, testData;
+
+            nbOfRounds = (nbOfRounds <= 0) ? 1 : nbOfRounds;
+            for (int i = 0; i < nbOfRounds; i++)
+            {
+                Console.WriteLine("Data extraction...");
+                List<double[]> sequence = dataset.getRandomSequence();
+                dataset.initTrainAndTestData(sequence, out trainData, out testData);
+                tmp = crossValidationResultSet(learning_params, trainData, testData);
+                Console.WriteLine("Average : " + tmp.getAverage());
+                globalResult.addResult(tmp);
+            }
+
+            return globalResult;
+        }
+
+        /// <summary>
+        /// Performs a leave-One-Sequence-Out (LOSO) cross validation on the given dataset.
+        /// </summary>
+        public static ResultSet leaveOneSequenceOut(Dataset dataset, LearningParams learning_params)
+        {
+            Console.WriteLine("Cross Validation LOSO");
+
+            ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
+            TrainDataType trainData, testData;
+
+            List<DatasetEntry> entries = dataset.Datas;
+            Shuffler.Shuffle(entries);
+
+
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                Console.WriteLine("Data extraction...");
+                
+                dataset.initTrainAndTestData(entries[i].Sequence, out trainData, out testData);
+
+                tmp = crossValidationResultSet(learning_params, trainData, testData);
+                Console.WriteLine("Average : " + tmp.getAverage());
+                globalResult.addResult(tmp);
+
+                Console.WriteLine("GlobalResult : "+globalResult);
             }
 
             return globalResult;

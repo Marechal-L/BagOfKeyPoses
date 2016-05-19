@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-#define TWOFOLD
+#define LOSO
 
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,9 @@ namespace SampleUsage
             continuousRecognitionSample();
             */
 
-            datasetLoadingAndValidationSample();
+            //datasetLoadingAndValidationSample();
+
+            datasetSilhouette();
 
             Console.ReadKey();
         }
@@ -91,6 +93,42 @@ namespace SampleUsage
 #endif
             Console.WriteLine(result);
             result.fileOutput("result1.log");
+        }
+
+        private static void datasetSilhouette()
+        {
+            int NUM_PIECES = 14;
+
+            Console.WriteLine("Dataset loading...");
+            Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../Weizmann_contours", ' ');
+
+            //Init learning_params
+            LearningParams learning_params = new LearningParams();
+            learning_params.ClassLabels = dataset.Labels;
+            learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
+            learning_params.InitialK = 8;
+            learning_params.FeatureSize = NUM_PIECES;
+
+            ResultSet result = null;
+#if RAND
+            result = ValidationTest.atRandom(dataset, learning_params);
+            Console.Write("AtRandom : ");
+#endif
+#if LOAO
+            result = ValidationTest.leaveOneActorOut(dataset, learning_params);
+            Console.Write("leaveOneActorOut : ");
+#endif
+#if LOSO
+            result = ValidationTest.leaveOneSequenceOut(dataset, learning_params);
+            Console.Write("leaveOneActorOut : ");
+#endif
+#if TWOFOLD
+            result = ValidationTest.twoFoldHalfActors(dataset, learning_params);
+            Console.WriteLine("TwoFoldHalfActors : ");
+#endif
+            Console.WriteLine(result);
+            //result.fileOutput("silhouette_LOSO.log");
+
         }
 
         /// <summary>

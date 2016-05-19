@@ -7,6 +7,8 @@ using Util;
 using Sequence = System.Collections.Generic.List<double[]>;
 using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.List<System.Collections.Generic.List<double[]>>>;
 
+using Point = System.Collections.Generic.List<double>;
+using Contour = System.Collections.Generic.List<System.Collections.Generic.List<double>>;
 
 //TODO : Rename all initTrainAndTestData methods
 
@@ -263,20 +265,20 @@ namespace Parser
             string[] lines = System.IO.File.ReadAllLines(filename);
 
             int i = 0;
-            double[] feature = new double[nbOfJoints * coordsDim];                      //All joints of the skeleton
+            double[] frame = new double[nbOfJoints * coordsDim];                      //All joints of the skeleton
             foreach (string line in lines)
             {
                 string[] numbers = line.Split(separator);
              
                 for (int j=0;j<coordsDim; j++)
                 {
-                    feature[(i*3)+j] = double.Parse(numbers[j], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.GetCultureInfo("en-US"));          
+                    frame[(i * 3) + j] = double.Parse(numbers[j], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.GetCultureInfo("en-US"));          
                 }
 
                 if (i == nbOfJoints - 1)
                 {
-                    sequence.Add(feature);
-                    feature = new double[nbOfJoints * coordsDim];
+                    sequence.Add(frame);
+                    frame = new double[nbOfJoints * coordsDim];
                     i = -1;
                 }
                 i++;
@@ -324,8 +326,43 @@ namespace Parser
         private static Sequence readSequenceSilhouette(string filename, char separator)
         {
             Sequence sequence = new Sequence();
+            int coordsDim = 2;
 
-            
+            string[] lines = System.IO.File.ReadAllLines(filename);
+
+            int nbOfFrames = int.Parse(lines[0]);
+
+            int frameSize = 0;
+
+            int i = 1;
+            for (int n = 0; n < nbOfFrames; n++)
+            {
+                frameSize = int.Parse(lines[i]);
+                double[] frame = new double[frameSize * coordsDim];
+                Contour contour = new Contour();
+                
+                i++;
+                for (int j = 0; j < frameSize; j++, i++)
+                {
+                    string[] numbers = lines[i].Split(separator);
+                    Point p = new Point();
+
+                    for (int k = 0; k < coordsDim; k++)
+                    {
+                        double value = double.Parse(numbers[k], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+
+                        p.Add(value);
+                        frame[(j * coordsDim) + k] = value;
+                    }
+                    contour.Add(p);
+                }
+
+
+                double[] radialSummary = ContourSelection.processRadialSummary(contour);
+
+                sequence.Add(radialSummary);
+            }
+
             return sequence;
         }
 
@@ -343,7 +380,7 @@ namespace Parser
 
                 string label = fields[0];
                 string subject = fields[1];
-                int episode = int.Parse(fields[2].Substring(1));
+                int episode = int.Parse(fields[2].Substring(1,2));
 
                 if (!labels.Contains(label))
                     labels.Add(label);
