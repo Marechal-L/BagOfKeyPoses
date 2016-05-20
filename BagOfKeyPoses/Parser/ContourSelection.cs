@@ -13,7 +13,7 @@ namespace Parser
     public static class ContourSelection
     {
         static int PIECE_SIZE = 30;                         // Number of points per piece of pie (RadialAdjustment)
-        static int NUM_PIECES = 14;                         // Number of pie pieces (RadialAdjustment)
+        public static int NUM_PIECES = 14;                         // Number of pie pieces (RadialAdjustment)
 
 
         /// <summary>

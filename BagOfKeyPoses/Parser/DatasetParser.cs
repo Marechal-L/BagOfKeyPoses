@@ -10,8 +10,6 @@ using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.L
 using Point = System.Collections.Generic.List<double>;
 using Contour = System.Collections.Generic.List<System.Collections.Generic.List<double>>;
 
-//TODO : Rename all initTrainAndTestData methods
-
 namespace Parser
 {
     /// <summary>
@@ -19,34 +17,41 @@ namespace Parser
     /// </summary>
     public class Dataset
     {
-        public System.Collections.Generic.List<Parser.DatasetEntry> Datas;
+        public System.Collections.Generic.List<Parser.DatasetEntry> Data;
         public Random rand = new Random();
         public List<string> Labels, Subjects;
 
         public Dataset() : this(new List<DatasetEntry>(), new List<string>(), new List<string>()) { }
         public Dataset(System.Collections.Generic.List<Parser.DatasetEntry> datas, List<string> labels, List<string> subjects)
         {
-            this.Datas = datas;
+            this.Data = datas;
             this.Labels = labels;
             this.Subjects = subjects;
         }
 
+        /// <summary>
+        /// Nomalise each skeleton of each sequence of the dataset.
+        /// <see cref="SkeletonNormalisation.normaliseSequenceSkeleton"/>
+        /// </summary>
         public void normaliseSkeletons()
         {
-            for (int i = Datas.Count - 1; i > 0; i--)
+            for (int i = Data.Count - 1; i > 0; i--)
             {
-                DatasetEntry entry = Datas[i];
+                DatasetEntry entry = Data[i];
                 entry.Sequence = SkeletonNormalisation.normaliseSequenceSkeleton(entry.Sequence);
                 if (entry.Sequence.Count == 0)
-                    Datas.Remove(entry);
+                    Data.Remove(entry);
             }
         }
 
-        public List<Sequence> getByLabel(string label)
+        /// <summary>
+        /// Returns all sequences with the given label (or action)
+        /// </summary>
+        public List<Sequence> getSequencesByLabel(string label)
         {
             List<Sequence> data = new List<Sequence>();
 
-            foreach(DatasetEntry entry in Datas)
+            foreach (DatasetEntry entry in Data)
             {
                 if (entry.Label == label)
                 {
@@ -57,32 +62,88 @@ namespace Parser
             return data;
         }
 
+        /// <summary>
+        /// Returns a random subject (or actor) from the dataset
+        /// </summary>
         public string getRandomSubject()
         {
-            return Datas[rand.Next(0, Datas.Count - 1)].Subject;
+            return Data[rand.Next(0, Data.Count - 1)].Subject;
         }
 
+        /// <summary>
+        /// Returns a random sequence from the dataset
+        /// </summary>
         public Sequence getRandomSequence()
         {
-            return Datas[rand.Next(0, Datas.Count - 1)].Sequence;
+            return Data[rand.Next(0, Data.Count - 1)].Sequence;
         }
 
+        /// <summary>
+        /// Returns a random label (or action) from the dataset
+        /// </summary>
         public string getRandomLabel()
         {
             return Labels[rand.Next(0, Labels.Count - 1)];
         }
 
-        public TrainDataType getPercentTrainData(double percent)
+        /// <summary>
+        /// Returns a random DatasetEntry from the dataset
+        /// <see cref="DatasetEntry">
+        /// </summary>
+        public DatasetEntry getRandomEntry()
+        {
+            return Data[rand.Next(0, Data.Count - 1)];
+        }
+
+        /// <summary>
+        /// Returns a percentage of the dataset for the train data.
+        /// </summary>
+        public TrainDataType getPercentageOfTrainData(double percentage)
         {
             TrainDataType data = new TrainDataType();
 
             foreach(string label in Labels)
             {
-                List<Sequence> label_data = getByLabel(label);
+                List<Sequence> label_data = getSequencesByLabel(label);
                 Shuffler.Shuffle<Sequence>(label_data);
-                for (int i = 0; i < label_data.Count * (percent / 100.0); i++)
+                for (int i = 0; i < label_data.Count * (percentage / 100.0); i++)
                 {
                     data[label].Add(label_data[i]);
+                }
+            }   
+            return data;
+        }
+
+        /// <summary>
+        /// Returns train data composed of all subjects except the given one.
+        /// </summary>
+        private TrainDataType getAllExcludingOneSubject(string subject)
+        {
+            TrainDataType data = new TrainDataType();
+
+            foreach (DatasetEntry entry in Data)
+            {
+                if (subject != entry.Subject)
+                {
+                    data[entry.Label].Add(entry.Sequence);
+                }
+            }
+
+            return data;
+        }
+
+        /// <summary>
+        /// Returns train data composed of all sequences except the given one.
+        /// </summary>
+        private TrainDataType getAllExcludingOneSequence(Sequence sequence)
+        {
+            TrainDataType data = new TrainDataType();
+
+            foreach (DatasetEntry entry in Data)
+            {
+                if (sequence != entry.Sequence)
+                {
+                    data[entry.Label].Add(entry.Sequence);
                 }
             }
 
@@ -90,6 +151,12 @@ namespace Parser
         }
 
         
+
+
+        /// <summary>
+        /// Initialise the training data and the testing data.
+        /// The training data is composed of the half of the subjects.
+        /// </summary>
         public void initTrainAndTestData(out TrainDataType trainData, out TrainDataType testData)
         {
             trainData = new TrainDataType();
@@ -107,9 +174,9 @@ namespace Parser
                 subjects.Add(subject);  
             }
 
-            for (int i = 0; i < Datas.Count; i++)
+            for (int i = 0; i < Data.Count; i++)
             {
-                DatasetEntry entry = Datas[i];
+                DatasetEntry entry = Data[i];
                 if (subjects.Contains(entry.Subject))
                 { 
                     trainData[entry.Label].Add(entry.Sequence);
@@ -121,21 +188,32 @@ namespace Parser
             }
         }
 
-        public void initTrainAndTestData(double percentOfTrainData, out TrainDataType trainData, out TrainDataType testData)
+        /// <summary>
+        /// Initialise the training data and the testing data.
+        /// The training data is composed of the given percentage of the dataset.
+        /// </summary>
+        public void initTrainAndTestData(double percentageOfTrainData, out TrainDataType trainData, out TrainDataType testData)
         {
             trainData = new TrainDataType();
             testData = new TrainDataType();
 
-            trainData = getPercentTrainData(percentOfTrainData);
+            trainData = getPercentageOfTrainData(percentageOfTrainData);
 
-            for (int i = 0; i < Datas.Count; i++)
+            for (int i = 0; i < Data.Count; i++)
             {
-                DatasetEntry entry = Datas[i];
+                DatasetEntry entry = Data[i];
                 if(!trainData[entry.Label].Contains(entry.Sequence))
+                {
+                   
                     testData[entry.Label].Add(entry.Sequence);
+                }
             }
         }
 
+        /// <summary>
+        /// Initialise the training data and the testing data.
+        /// The training data is composed of the half of the subjects
+        /// </summary>
         public void initTrainAndTestData(string testedSubject, out TrainDataType trainData, out TrainDataType testData)
         {
             trainData = new TrainDataType();
@@ -143,9 +221,9 @@ namespace Parser
 
             trainData = getAllExcludingOneSubject(testedSubject);
 
-            for (int i = 0; i < Datas.Count; i++)
+            for (int i = 0; i < Data.Count; i++)
             {
-                DatasetEntry entry = Datas[i];
+                DatasetEntry entry = Data[i];
                 if (!trainData[entry.Label].Contains(entry.Sequence))
                 {
                     testData[entry.Label].Add(entry.Sequence);
@@ -153,6 +231,10 @@ namespace Parser
             }
         }
 
+        /// <summary>
+        /// Initialise the training data and the testing data.
+        /// The training data is composed of all sequences except the given one.
+        /// </summary>
         public void initTrainAndTestData(Sequence sequence, out TrainDataType trainData, out TrainDataType testData)
         {
             trainData = new TrainDataType();
@@ -160,9 +242,9 @@ namespace Parser
 
             trainData = getAllExcludingOneSequence(sequence);
 
-            for (int i = 0; i < Datas.Count; i++)
+            for (int i = 0; i < Data.Count; i++)
             {
-                DatasetEntry entry = Datas[i];
+                DatasetEntry entry = Data[i];
                 if (!trainData[entry.Label].Contains(entry.Sequence))
                 {
                     testData[entry.Label].Add(entry.Sequence);
@@ -170,14 +252,18 @@ namespace Parser
             }
         }
 
+        /// <summary>
+        /// Initialise the training data and the testing data.
+        /// The training data is composed of all subjects of the given training set.
+        /// </summary>
         public void initTrainAndTestData(string[] trainingSet, out TrainDataType trainData, out TrainDataType testData)
         {
             trainData = new TrainDataType();
             testData = new TrainDataType();
 
-            for (int i = 0; i < Datas.Count; i++)
+            for (int i = 0; i < Data.Count; i++)
             {
-                DatasetEntry entry = Datas[i];
+                DatasetEntry entry = Data[i];
                 if (trainingSet.Contains(entry.Subject))
                 {
                     trainData[entry.Label].Add(entry.Sequence);
@@ -187,42 +273,7 @@ namespace Parser
                     testData[entry.Label].Add(entry.Sequence);
                 }
             }
-        }
-
-        private TrainDataType getAllExcludingOneSubject(string subject)
-        {
-            TrainDataType data = new TrainDataType();
-
-            foreach (DatasetEntry entry in Datas)
-            {
-                if (subject != entry.Subject)
-                {
-                    data[entry.Label].Add(entry.Sequence);
-                }
-            }
-
-            return data;
-        }
-
-        private TrainDataType getAllExcludingOneSequence(Sequence sequence)
-        {
-            TrainDataType data = new TrainDataType();
-
-            foreach (DatasetEntry entry in Datas)
-            {
-                if (sequence != entry.Sequence)
-                {
-                    data[entry.Label].Add(entry.Sequence);
-                }
-            }
-
-            return data;
-        }
-
-        public DatasetEntry getRandomEntry()
-        {
-            return Datas[rand.Next(0, Datas.Count-1)];
-        }
+        } 
     }
 
     /// <summary>
@@ -252,7 +303,7 @@ namespace Parser
     public static class DatasetParser
     {
         /// <summary>
-        /// Read a sequence by storing the joints of each skeleton
+        /// Read a sequence by storing all joints of each skeleton
         /// </summary>
         /// <param name="nbOfJoints">The number of joints of a skeleton</param>
         /// <param name="separator">Separator between each coordinate of the skeleton's joints in the files</param>
@@ -323,6 +374,10 @@ namespace Parser
             return new Dataset(datas,labels,subjects);
         }
 
+        /// <summary>
+        /// Read a sequence by storing all points of the silhouette and processing a radial summary.
+        /// <see cref="ContourSelection.processRadialSummary">
+        /// </summary>
         private static Sequence readSequenceSilhouette(string filename, char separator)
         {
             Sequence sequence = new Sequence();
@@ -366,6 +421,9 @@ namespace Parser
             return sequence;
         }
 
+        /// <summary>
+        /// Load the Weizmann dataset from the given folder.
+        /// </summary>
         public static Dataset loadDatasetSilhouette(string foldername, char separator)
         {
             List<DatasetEntry> datas = new List<DatasetEntry>();

@@ -14,7 +14,11 @@
    limitations under the License.
 */
 
-#define LOSO
+
+//Cross-validation method
+#define RAND
+//Dataset
+#define WEIZMANN
 
 using System;
 using System.Collections.Generic;
@@ -26,9 +30,6 @@ using Parser;
 using Validator;
 using Sequence = System.Collections.Generic.List<double[]>;
 using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.List<System.Collections.Generic.List<double[]>>>;
-
-
-//TODO : Explain the meaning of each test functions (leaveOneActorOut) and the effects of each parameters.
 
 namespace SampleUsage
 {
@@ -44,18 +45,69 @@ namespace SampleUsage
             continuousRecognitionSample();
             */
 
-            //datasetLoadingAndValidationSample();
-
-            datasetSilhouette();
+            validate();
 
             Console.ReadKey();
         }
 
         /// <summary>
-        /// This sample shows how to load the dataset from a directory and to perform a cross validation. 
+        /// This sample shows how to load the dataset from a directory and how to perform a cross validation. 
         /// </summary>
-        private static void datasetLoadingAndValidationSample()
+        private static void validate()
         {
+            LearningParams learning_params;
+            Dataset dataset = loadDataset(out learning_params);
+
+            ResultSet result = null;
+            string filename = "logs/result_";
+
+#if RAND
+            result = ValidationTest.atRandom(dataset, learning_params);
+            Console.Write("AtRandom : ");
+            filename += "RAND";
+#endif
+#if LOSO
+            result = ValidationTest.leaveOneSequenceOut(dataset, learning_params);
+            Console.Write("leaveOneSequenceOut : ");
+            filename += "LOSO";
+#endif
+#if LOSOR
+            result = ValidationTest.leaveOneSequenceOutRandom(dataset, learning_params);
+            Console.Write("leaveOneSequenceOutRandom : ");
+            filename += "LOSOR";
+#endif
+#if LOAO
+            result = ValidationTest.leaveOneActorOut(dataset, learning_params);
+            Console.Write("leaveOneActorOut : ");
+            filename += "LOAO";
+#endif
+#if LOAOR
+            result = ValidationTest.leaveOneActorOutRandom(dataset, learning_params);
+            Console.Write("leaveOneActorOutRandom : ");
+            filename += "LOAOR";
+#endif
+#if TWOFOLD
+            result = ValidationTest.twoFoldHalfActors(dataset, learning_params);
+            Console.WriteLine("twoFoldHalfActors : ");
+            filename += "TWOFOLD";
+#endif
+#if TWOFOLDSET
+            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" });
+            Console.Write("twoFoldActorsTrainingSet : ");
+            filename += "TWOFOLDSET";
+#endif
+
+            Console.WriteLine(result);
+            result.fileOutput(filename+".log");
+        }
+
+        /// <summary>
+        /// Load a dataset and initializes the learning params 
+        /// </summary>
+        private static Dataset loadDataset(out LearningParams learning_params)
+        {
+#if MSR
+            //Number of joints of a skeleton
             int nbOfJoints = 20;
 
             Console.WriteLine("Dataset loading...");
@@ -67,68 +119,29 @@ namespace SampleUsage
             dataset.normaliseSkeletons();
 
             //Init learning_params
-            LearningParams learning_params = new LearningParams();
+            learning_params = new LearningParams();
             learning_params.ClassLabels = dataset.Labels;
             learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
             learning_params.InitialK = 8;
             learning_params.FeatureSize = nbOfJoints * 3;
+#endif
+#if WEIZMANN
 
-            ResultSet result = null;
-
-#if RAND
-            result = ValidationTest.atRandom(dataset, learning_params);
-            Console.Write("AtRandom : ");
-#endif
-#if LOAO
-            result = ValidationTest.leaveOneActorOut(dataset, learning_params);
-            Console.Write("leaveOneActorOut : ");
-#endif
-#if TWOFOLD
-            result = ValidationTest.twoFoldHalfActors(dataset, learning_params);
-            Console.WriteLine("TwoFoldHalfActors : ");
-#endif
-#if TWOFOLDSET
-            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" });
-            Console.Write("twoFoldActorsTrainingSet : ");
-#endif
-            Console.WriteLine(result);
-            result.fileOutput("result1.log");
-        }
-
-        private static void datasetSilhouette()
-        {
-            int NUM_PIECES = 14;
+            // Number of pie pieces (RadialAdjustment)
+            Parser.ContourSelection.NUM_PIECES = 14;
 
             Console.WriteLine("Dataset loading...");
-            Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../Weizmann_contours", ' ');
-
+            //Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../Weizmann_contours", ' ');
+            Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../Weizmann_contours - without skip", ' ');
+            
             //Init learning_params
-            LearningParams learning_params = new LearningParams();
+            learning_params = new LearningParams();
             learning_params.ClassLabels = dataset.Labels;
             learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
             learning_params.InitialK = 8;
-            learning_params.FeatureSize = NUM_PIECES;
-
-            ResultSet result = null;
-#if RAND
-            result = ValidationTest.atRandom(dataset, learning_params);
-            Console.Write("AtRandom : ");
+            learning_params.FeatureSize = Parser.ContourSelection.NUM_PIECES;
 #endif
-#if LOAO
-            result = ValidationTest.leaveOneActorOut(dataset, learning_params);
-            Console.Write("leaveOneActorOut : ");
-#endif
-#if LOSO
-            result = ValidationTest.leaveOneSequenceOut(dataset, learning_params);
-            Console.Write("leaveOneActorOut : ");
-#endif
-#if TWOFOLD
-            result = ValidationTest.twoFoldHalfActors(dataset, learning_params);
-            Console.WriteLine("TwoFoldHalfActors : ");
-#endif
-            Console.WriteLine(result);
-            //result.fileOutput("silhouette_LOSO.log");
-
+            return dataset;
         }
 
         /// <summary>

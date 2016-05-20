@@ -10,6 +10,10 @@ using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.L
 
 namespace Validator
 {
+    /// <summary>
+    /// Store the results of a cross validation (average and confusion matrix).
+    /// Same class for a single result or a global result.
+    /// </summary>
     public class ResultSet
     {
         public int[] TestsPerLabels, SuccessesPerLabels;
@@ -37,9 +41,13 @@ namespace Validator
             confusionMatrix = new double[nbOfLabels, nbOfLabels];
         }
 
+        /// <summary>
+        /// Returns the confusion matrix. 
+        /// Numbers : single result
+        /// Percentage : global result
+        /// </summary>
         public double[,] getConfusionMatrix()
         {
-
             if (isGlobalResultSet)
             {
                 double[,] tmp = new double[labels.Count, labels.Count];
@@ -58,6 +66,9 @@ namespace Validator
                 return confusionMatrix;
         }
 
+        /// <summary>
+        /// Returns the confusion matrix as percentage for a single result.
+        /// </summary>
         public double[,] getConfusionMatrixPercent()
         {
             double[,] tmp = new double[labels.Count,labels.Count];
@@ -74,12 +85,18 @@ namespace Validator
             return tmp;
         }
 
+        /// <summary>
+        /// Returns the average of successes.
+        /// </summary>
         public double getAverage()
         {
             return TotalSuccesses / TotalTests;
         }
 
-        public void saveTest(string testedLabel, string recognizedLabel)
+        /// <summary>
+        /// Adds a test to the result. 
+        /// </summary>
+        public void addTest(string testedLabel, string recognizedLabel)
         {
             TotalTests++;
             int testIndex = labels.IndexOf(testedLabel);
@@ -96,6 +113,9 @@ namespace Validator
             confusionMatrix[testIndex, resultIndex] += 1;
         }
 
+        /// <summary>
+        /// Adds a single result to the global result. 
+        /// </summary>
         public void addResult(ResultSet r)
         {
             isGlobalResultSet = true;
@@ -119,6 +139,18 @@ namespace Validator
             TotalTests++;
         }
 
+        /// <summary>
+        /// Writes the result into a file. 
+        /// </summary>
+        public void fileOutput(string filename)
+        {
+            System.IO.File.Create(filename).Close();
+
+            System.IO.StreamWriter writer = new System.IO.StreamWriter(filename);
+            writer.Write(this);
+            writer.Close();
+        }
+
         public override string ToString()
         {
             string s = "\n";
@@ -138,21 +170,16 @@ namespace Validator
                 s += ConsolePrinter.getArrayString(getConfusionMatrixPercent(), labels, labels);
             }
 
+            s += "\t TotalTets : " + TotalTests + "\n";
+
             return s;
-        }
-
-        public void fileOutput(string filename)
-        {
-            System.IO.File.Create(filename).Close();
-
-            System.IO.StreamWriter writer = new System.IO.StreamWriter(filename);
-            writer.Write(this);
-            writer.Close();
-        }
+        } 
     }
 
     public static class ValidationTest
     {
+        static int FILE_ID = 0;
+
         /// <summary>
         /// Performs a cross validation at random on the given dataset.
         /// </summary>
@@ -177,7 +204,8 @@ namespace Validator
         }
 
         /// <summary>
-        /// Performs a leave-One-Actor-Out (LOAO) cross validation on the given dataset.
+        /// Performs a leave-One-Actor-Out Random (LOAOR) cross validation on the given dataset.
+        /// Selects one actor at random at each round.
         /// </summary>
         public static ResultSet leaveOneActorOutRandom(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
         {
@@ -202,6 +230,8 @@ namespace Validator
         }
 
         /// <summary>
+        /// Performs a leave-One-Actor-Out (LOAO) cross validation on the given dataset.
+        /// Tests all actors one by one.
         /// </summary>
         public static ResultSet leaveOneActorOut(Dataset dataset, LearningParams learning_params)
         {
@@ -228,7 +258,8 @@ namespace Validator
         }
 
         /// <summary>
-        /// Performs a leave-One-Sequence-Out (LOSO) cross validation on the given dataset.
+        /// Performs a leave-One-Sequence-Out Random (LOSOR) cross validation on the given dataset.
+        /// Selects one sequence at random at each round.
         /// </summary>
         public static ResultSet leaveOneSequenceOutRandom(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
         {
@@ -253,6 +284,7 @@ namespace Validator
 
         /// <summary>
         /// Performs a leave-One-Sequence-Out (LOSO) cross validation on the given dataset.
+        /// Tests all sequences one by one.
         /// </summary>
         public static ResultSet leaveOneSequenceOut(Dataset dataset, LearningParams learning_params)
         {
@@ -261,7 +293,7 @@ namespace Validator
             ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
 
-            List<DatasetEntry> entries = dataset.Datas;
+            List<DatasetEntry> entries = dataset.Data;
             Shuffler.Shuffle(entries);
 
             for (int i = 0; i < entries.Count; i++)
@@ -279,7 +311,7 @@ namespace Validator
         }
 
         /// <summary>
-        /// Performs a 2-fold cross validation on the given dataset, randomly choose the half of actors for training.
+        /// Performs a 2-fold cross validation on the given dataset, chooses randomly the half of actors for training.
         /// </summary>
         public static ResultSet twoFoldHalfActors(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
         {
@@ -308,7 +340,7 @@ namespace Validator
         }
 
         /// <summary>
-        /// Performs a 2-fold cross validation on the given dataset, take the actors set given for training and the others for testing.
+        /// Performs a 2-fold cross validation on the given dataset, takes the actor set given for training and the others for testing.
         /// </summary>
         public static ResultSet twoFoldActorsTrainingSet(Dataset dataset, LearningParams learning_params, string[] actorsTrainingSet, int nbOfRounds = 10)
         {
@@ -337,6 +369,10 @@ namespace Validator
             return globalResult;
         }
 
+        /// <summary>
+        /// Core function of the cross validation.
+        /// Trains the model with the given train data and tests it with the test data.
+        /// </summary>
         private static ResultSet crossValidationResultSet(LearningParams learning_params, TrainDataType trainData, TrainDataType testData)
         {
             //Cross Validation     
@@ -352,14 +388,15 @@ namespace Validator
                 foreach (var sequence in testData[label])
                 {
                     string recognition = bokp.EvaluateSequence(sequence);
-                    resultSet.saveTest(label,recognition);                 
+                    resultSet.addTest(label, recognition);                 
                 }
             }
 
 #if DEBUG
             Console.WriteLine(resultSet);
+            //resultSet.fileOutput("results/result_"+FILE_ID+".log");
+            //FILE_ID++;
 #endif
-
             return resultSet;
         }
     }
