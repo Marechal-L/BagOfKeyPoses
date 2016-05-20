@@ -183,9 +183,9 @@ namespace Validator
         /// <summary>
         /// Performs a cross validation at random on the given dataset.
         /// </summary>
-        public static ResultSet atRandom(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
+        public static ResultSet twoFoldOnSequences(Dataset dataset, LearningParams learning_params,int percentageOfTrainData, int nbOfRounds = 10)
         {
-            Console.WriteLine("Cross Validation at Random");
+            Console.WriteLine("Cross Validation twoFoldOnSequences");
 
             ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
@@ -194,8 +194,13 @@ namespace Validator
             for (int i = 0; i < nbOfRounds; i++)
             {
                 Console.WriteLine("Data extraction...");
-                dataset.initTrainAndTestData(50, out trainData, out testData);
+                dataset.initTrainAndTestData(percentageOfTrainData, out trainData, out testData);
+
                 tmp = crossValidationResultSet(learning_params, trainData, testData);
+                Console.WriteLine("Average : " + tmp.getAverage());
+                globalResult.addResult(tmp);
+
+                tmp = crossValidationResultSet(learning_params, testData, trainData);
                 Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
             }
@@ -274,6 +279,7 @@ namespace Validator
                 Console.WriteLine("Data extraction...");
                 List<double[]> sequence = dataset.getRandomSequence();
                 dataset.initTrainAndTestData(sequence, out trainData, out testData);
+
                 tmp = crossValidationResultSet(learning_params, trainData, testData);
                 Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);

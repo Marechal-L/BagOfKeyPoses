@@ -146,12 +146,8 @@ namespace Parser
                     data[entry.Label].Add(entry.Sequence);
                 }
             }
-
             return data;
         }
-
-        
-
 
         /// <summary>
         /// Initialise the training data and the testing data.
@@ -204,7 +200,6 @@ namespace Parser
                 DatasetEntry entry = Data[i];
                 if(!trainData[entry.Label].Contains(entry.Sequence))
                 {
-                   
                     testData[entry.Label].Add(entry.Sequence);
                 }
             }

@@ -15,10 +15,19 @@
 */
 
 
-//Cross-validation method
-#define RAND
+//Cross-validation methods
+    //TWOFOLDSQ : twoFoldOnSequences
+    //LOSO : leaveOneSequenceOut
+    //LOSOR : leaveOneSequenceOutRandom
+    //LOAO : leaveOneActorOut
+    //LOAOR : leaveOneActorOutRandom
+    //TWOFOLD : twoFoldHalfActors
+    //TWOFOLDS : twoFoldActorsTrainingSet
+#define TWOFOLDSQ
 //Dataset
-#define WEIZMANN
+    //MSR
+    //WEIZMANN
+#define MSR
 
 using System;
 using System.Collections.Generic;
@@ -61,10 +70,10 @@ namespace SampleUsage
             ResultSet result = null;
             string filename = "logs/result_";
 
-#if RAND
-            result = ValidationTest.atRandom(dataset, learning_params);
-            Console.Write("AtRandom : ");
-            filename += "RAND";
+#if TWOFOLDSQ
+            result = ValidationTest.twoFoldOnSequences(dataset, learning_params, 50);
+            Console.Write("twoFoldOnSequences : ");
+            filename += "TWOFOLDSQ";
 #endif
 #if LOSO
             result = ValidationTest.leaveOneSequenceOut(dataset, learning_params);
@@ -72,7 +81,7 @@ namespace SampleUsage
             filename += "LOSO";
 #endif
 #if LOSOR
-            result = ValidationTest.leaveOneSequenceOutRandom(dataset, learning_params);
+            result = ValidationTest.leaveOneSequenceOutRandom(dataset, learning_params,20);
             Console.Write("leaveOneSequenceOutRandom : ");
             filename += "LOSOR";
 #endif
