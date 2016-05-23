@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Util
 {
+    /// <summary>
+    /// Simple class used to shuffle a list of generic objects.
+    /// </summary>
     public static class Shuffler
     {
         private static readonly Random rnd = new Random();

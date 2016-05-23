@@ -23,6 +23,9 @@ namespace Parser
            return modifiedSequence;
         }
 
+        /// <summary>
+        /// Normalise the skeletons by translating and dividing by the normalising length.
+        /// </summary>
         private static List<double[]> normaliseSequence(List<double[]> sequence)
         {
             List<double[]> normalisedSequence = new List<double[]>();
@@ -34,13 +37,13 @@ namespace Parser
             {
                 double[] skeleton = sequence[i];
                
-                // Calculation of the center of mass
+                //Initialisation of the center of mass
                 int cont_joints = 0;
                 origin[0] = 0;
                 origin[1] = 0;
                 origin[2] = 0;
 
-                //foreach joint
+                //Calculation of the center of mass
                 for (int j = 0; j < skeleton.Length; j+=3)
                 {
                     origin[0] += skeleton[j];
@@ -54,6 +57,7 @@ namespace Parser
                 origin[1] /= cont_joints;
                 origin[2] /= cont_joints;
 
+
                 // Calculate the average distance from each joint to the center of mass
                 double normDistance = 0.0;
                 for (int j = 0; j < skeleton.Length; j += 3)
@@ -64,6 +68,10 @@ namespace Parser
 
                 normDistance /= cont_joints;
 
+               /*  
+                *  Translate according to the new reference centre
+                *  Normalise the coordinates according to the normalising length
+                */
                 for (int j = 0; j < skeleton.Length; j += 3)
                 {
                     skeleton[j] = (float)((skeleton[j] - origin[0]) / normDistance);
@@ -75,7 +83,10 @@ namespace Parser
             return normalisedSequence;
         }
 
-        // Rotation of the whole sequence according to the angle of the first skeleton
+        /// <summary>
+        /// Rotation of the skeleton with respect to the Kinect.
+        /// According to the Fig.6 in the paper "Evolutionary joint selection to improve human action recognition with RGB-D devices" (http://www.sciencedirect.com/science/article/pii/S0957417413006210)
+        /// </summary>
         private static List<double[]> rotateSequence(List<double[]> sequence)
         {
             List<double[]> rotatedSequence = new List<double[]>();
@@ -106,7 +117,7 @@ namespace Parser
                     Debug.WriteLine("Angle= " + angle * 180 / Math.PI);
                 }
 
-                //foreach joint
+                // Rotation of the whole sequence according to the angle of the first skeleton.
                 for (int j = 0; j < skeleton.Length; j += 3)
                 {
                     double[] pjoint = new double[] { skeleton[j], skeleton[j + 1], skeleton[j + 2] };
@@ -126,6 +137,10 @@ namespace Parser
             return rotatedSequence;
         }
 
+
+        /// <summary>
+        /// Remove all invalids skeletons according to the distance between the neck and the torso.
+        /// </summary>
         private static List<double[]> validateSequence(List<double[]> sequence)
         {
             int origLength = sequence.Count;

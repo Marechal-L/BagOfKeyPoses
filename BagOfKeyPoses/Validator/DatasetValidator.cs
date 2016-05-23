@@ -11,12 +11,12 @@ using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.L
 namespace Validator
 {
     /// <summary>
-    /// Store the results of a cross validation (average and confusion matrix).
+    /// Store and compute the results of a validation (average and confusion matrix).
     /// Same class for a single result or a global result.
     /// </summary>
     public class ResultSet
     {
-        public int[] TestsPerLabels, SuccessesPerLabels;
+        public int[] TestsPerLabel, SuccessesPerLabel;
         public double TotalTests, TotalSuccesses;
 
         private double[,] confusionMatrix;
@@ -36,15 +36,15 @@ namespace Validator
             this.labels = label;
           
             int nbOfLabels = labels.Count;
-            TestsPerLabels = new int[nbOfLabels];
-            SuccessesPerLabels = new int[nbOfLabels];
+            TestsPerLabel = new int[nbOfLabels];
+            SuccessesPerLabel = new int[nbOfLabels];
             confusionMatrix = new double[nbOfLabels, nbOfLabels];
         }
 
         /// <summary>
-        /// Returns the confusion matrix. 
-        /// Numbers : single result
-        /// Percentage : global result
+        /// Computes and returns the confusion matrix. 
+        /// single result : Numbers format
+        /// global result : Percentage format 
         /// </summary>
         public double[,] getConfusionMatrix()
         {
@@ -56,8 +56,8 @@ namespace Validator
                 {
                     for (int j = 0; j < tmp.Length / labels.Count; j++)
                     {
-                        if (isGlobalResultSet && TestsPerLabels[i] != 0)
-                            tmp[i, j] = (confusionMatrix[i, j] / TestsPerLabels[i]) * 100;
+                        if (isGlobalResultSet && TestsPerLabel[i] != 0)
+                            tmp[i, j] = (confusionMatrix[i, j] / TestsPerLabel[i]) * 100;
                     }
                 }
                 return tmp;
@@ -67,7 +67,7 @@ namespace Validator
         }
 
         /// <summary>
-        /// Returns the confusion matrix as percentage for a single result.
+        /// Computes and returns the confusion matrix as percentage for a single result.
         /// </summary>
         public double[,] getConfusionMatrixPercent()
         {
@@ -77,8 +77,8 @@ namespace Validator
             {
                 for (int j = 0; j < tmp.Length / labels.Count; j++)
                 {
-                    if (TestsPerLabels[i] != 0)
-                        tmp[i, j] = (confusionMatrix[i, j] / TestsPerLabels[i]) * 100;
+                    if (TestsPerLabel[i] != 0)
+                        tmp[i, j] = (confusionMatrix[i, j] / TestsPerLabel[i]) * 100;
                 }
             }
 
@@ -94,19 +94,22 @@ namespace Validator
         }
 
         /// <summary>
-        /// Adds a test to the result. 
+        /// Adds a test to a single result. 
         /// </summary>
+        /// <param name="testedLabel">The real label under test</param>
+        /// <param name="recognizedLabel">The answer of the recognition algorithm</param>
         public void addTest(string testedLabel, string recognizedLabel)
         {
             TotalTests++;
+         
             int testIndex = labels.IndexOf(testedLabel);
             int resultIndex = labels.IndexOf(recognizedLabel);
 
-            TestsPerLabels[testIndex] += 1;
+            TestsPerLabel[testIndex] += 1;
 
             if (testedLabel == recognizedLabel)
             {
-                SuccessesPerLabels[testIndex] += 1;
+                SuccessesPerLabel[testIndex] += 1;
                 TotalSuccesses++;
             }
 
@@ -114,20 +117,27 @@ namespace Validator
         }
 
         /// <summary>
-        /// Adds a single result to the global result. 
+        /// Adds a single result to a global result. 
         /// </summary>
         public void addResult(ResultSet r)
         {
+            //By adding a single result, this result become a global result.
             isGlobalResultSet = true;
 
+            //Then, the total Successes become the sum of the averages.
             TotalSuccesses += r.getAverage();
 
-            for (int i = 0; i < TestsPerLabels.Length; i++)
+            /*
+             * We increment the tests counter of a label only if there is at least one test
+             * to avoid considering an untested label. 
+             */
+            for (int i = 0; i < TestsPerLabel.Length; i++)
             {
-                if (r.TestsPerLabels[i] != 0)
-                    TestsPerLabels[i] += 1;
+                if (r.TestsPerLabel[i] != 0)
+                    TestsPerLabel[i] += 1;
             }
 
+            //The confusion matrix is the sum of each confusion matrices.
             for (int i = 0; i < confusionMatrix.Length / labels.Count; i++)
             {
                 for (int j = 0; j < confusionMatrix.Length / labels.Count; j++)
@@ -136,6 +146,7 @@ namespace Validator
                 }
             }
 
+            //Number of single results added to the global result.
             TotalTests++;
         }
 
@@ -170,7 +181,7 @@ namespace Validator
                 s += ConsolePrinter.getArrayString(getConfusionMatrixPercent(), labels, labels);
             }
 
-            s += "\t TotalTets : " + TotalTests + "\n";
+            s += "\t TotalTests : " + TotalTests + "\n";
 
             return s;
         } 
@@ -181,7 +192,7 @@ namespace Validator
         static int FILE_ID = 0;
 
         /// <summary>
-        /// Performs a cross validation at random on the given dataset.
+        /// Performs a 2-fold validation on the given dataset, chooses randomly a percentage for the train data.
         /// </summary>
         public static ResultSet twoFoldOnSequences(Dataset dataset, LearningParams learning_params,int percentageOfTrainData, int nbOfRounds = 10)
         {
@@ -382,24 +393,33 @@ namespace Validator
         private static ResultSet crossValidationResultSet(LearningParams learning_params, TrainDataType trainData, TrainDataType testData)
         {
             //Cross Validation     
+
+            //Create a new resultSet
             ResultSet resultSet = new ResultSet(learning_params.ClassLabels);
 
+            //Create and train a new model
             Console.WriteLine("Training...");
             BoKP bokp = new BoKP(learning_params);
             bokp.Train(trainData.Dictionary);
 
+            //Evaluate each sequence
             Console.WriteLine("Testing...");
             foreach (string label in learning_params.ClassLabels)
             {
                 foreach (var sequence in testData[label])
                 {
                     string recognition = bokp.EvaluateSequence(sequence);
+
+                    //Add the test to the resultSet
                     resultSet.addTest(label, recognition);                 
                 }
             }
 
 #if DEBUG
             Console.WriteLine(resultSet);
+
+            //Here you can print each results into a file
+            
             //resultSet.fileOutput("results/result_"+FILE_ID+".log");
             //FILE_ID++;
 #endif

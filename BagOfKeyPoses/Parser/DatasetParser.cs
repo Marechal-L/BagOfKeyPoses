@@ -161,6 +161,7 @@ namespace Parser
             List<String> subjects = new List<string>();
             string subject;
 
+            //Create a list that contains the half of the subjects selected at random.
             for (int i = 0; i < Subjects.Count/2; i++)
             {
                 do
@@ -170,6 +171,10 @@ namespace Parser
                 subjects.Add(subject);  
             }
 
+           /* 
+            * Add all the sequences of the subjects in the list to the trainData
+            * and the others to the testData.
+            */
             for (int i = 0; i < Data.Count; i++)
             {
                 DatasetEntry entry = Data[i];
@@ -276,10 +281,10 @@ namespace Parser
     /// </summary>
     public class DatasetEntry
     {
-        public string Label;
-        public string Subject;
-        public int Episode;
-        public Sequence Sequence;
+        public string Label;                            //Action name
+        public string Subject;                          //Actor name
+        public int Episode;                             //Number of the try or attempt
+        public Sequence Sequence;                       //Sequence of frames
 
         public DatasetEntry() : this("0", "0", 0, new Sequence())
         {
@@ -334,6 +339,7 @@ namespace Parser
 
         /// <summary>
         /// Load the MSR dataset from the given folder.
+        /// Filename example : a01_s01_e01_skeleton3D (Label_Subject_eTry_...)
         /// </summary>
         /// <param name="nbOfJoints">The number of joints of a skeleton</param>
         /// <param name="separator">Separator between each coordinate of the skeleton's joints in the files</param>
@@ -373,6 +379,7 @@ namespace Parser
         /// Read a sequence by storing all points of the silhouette and processing a radial summary.
         /// <see cref="ContourSelection.processRadialSummary">
         /// </summary>
+        /// <param name="separator">Separator between each coordinate of the skeleton's joints in the files</param>
         private static Sequence readSequenceSilhouette(string filename, char separator)
         {
             Sequence sequence = new Sequence();
@@ -388,7 +395,6 @@ namespace Parser
             for (int n = 0; n < nbOfFrames; n++)
             {
                 frameSize = int.Parse(lines[i]);
-                double[] frame = new double[frameSize * coordsDim];
                 Contour contour = new Contour();
                 
                 i++;
@@ -402,11 +408,9 @@ namespace Parser
                         double value = double.Parse(numbers[k], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
 
                         p.Add(value);
-                        frame[(j * coordsDim) + k] = value;
                     }
                     contour.Add(p);
                 }
-
 
                 double[] radialSummary = ContourSelection.processRadialSummary(contour);
 
@@ -418,7 +422,9 @@ namespace Parser
 
         /// <summary>
         /// Load the Weizmann dataset from the given folder.
+        /// Filename example : bend_daria_e01 (Label_Subject_eTry)
         /// </summary>
+        /// <param name="separator">Separator between each coordinate of the skeleton's joints in the files</param>
         public static Dataset loadDatasetSilhouette(string foldername, char separator)
         {
             List<DatasetEntry> datas = new List<DatasetEntry>();

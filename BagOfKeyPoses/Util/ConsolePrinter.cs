@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Util
 {
+    /// <summary>
+    /// Simple class used to improve the display of arrays on console.
+    /// </summary>
     public static class ConsolePrinter
     {
         static int tableWidth = 50;
