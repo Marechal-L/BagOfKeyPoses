@@ -40,7 +40,10 @@ namespace Parser
                 DatasetEntry entry = Data[i];
                 entry.Sequence = SkeletonNormalisation.normaliseSequenceSkeleton(entry.Sequence);
                 if (entry.Sequence.Count == 0)
+                {
+                    Console.WriteLine(entry.Label+"_"+entry.Subject+"_e"+entry.Episode+" removed because all skeletons are wrong.");
                     Data.Remove(entry);
+                }
             }
         }
 

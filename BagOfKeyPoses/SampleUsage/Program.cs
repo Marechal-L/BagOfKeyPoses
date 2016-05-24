@@ -139,7 +139,7 @@ namespace SampleUsage
             Console.WriteLine("Dataset loading...");
 
             //Load Dataset of Skeletons
-            Dataset dataset = DatasetParser.loadDatasetSkeleton(nbOfJoints, "../../../datasets/AS1", ' ');
+            Dataset dataset = DatasetParser.loadDatasetSkeleton(nbOfJoints, "../../../datasets/MSR/AS", ' ');
 
             //Normalisation
             dataset.normaliseSkeletons();
@@ -157,8 +157,8 @@ namespace SampleUsage
             Parser.ContourSelection.NUM_PIECES = 14;
 
             Console.WriteLine("Dataset loading...");
-            //Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../datasets/Weizmann_contours", ' ');
-            Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../datasets/Weizmann_contours - without skip", ' ');
+            //Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../datasets/Weizmann/Weizmann_contours", ' ');
+            Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../datasets/Weizmann/Weizmann_contours - without skip", ' ');
             
             //Init learning_params
             learning_params = new LearningParams();
