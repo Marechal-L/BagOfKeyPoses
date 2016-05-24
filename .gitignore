@@ -9,6 +9,6 @@
 *.exe
 *.bin
 *.user
-/obj
-/bin
-/EvolutionnaryAlgorithm/*
+obj
+EvolutionnaryAlgorithm
+bin
