@@ -20,9 +20,10 @@ We used the matlab file that contains the extracted masks obtained by background
 Direct download : http://www.wisdom.weizmann.ac.il/~vision/VideoAnalysis/Demos/SpaceTimeActions/DB/classification_masks.mat
 
 We used the imcontour function to create a contour plot of the image data (http://uk.mathworks.com/help/images/ref/imcontour.html?requestedDomain=www.mathworks.com)
+
 Then the contours are saved into text files and we used them as inputs for our algorithm.
 
-License
+Credits
 -------
 
 **Weizmann** 

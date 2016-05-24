@@ -363,7 +363,6 @@ namespace Validator
         {
             Console.WriteLine("Cross Validation 2-fold training actors set");
 
-
             ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
 

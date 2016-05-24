@@ -33,12 +33,12 @@
 *   
 *   Define values for the Validation methods
 *       - LOSO : leaveOneSequenceOut                - Exhaustive          
-*       - LOSOR : leaveOneSequenceOutRandom         - Non Exhaustive (rounds)
+*       - LOSOR : leaveOneSequenceOutRandom         - Non Exhaustive (number of rounds)
 *       - LOAO : leaveOneActorOut                   - Exhaustive
-*       - LOAOR : leaveOneActorOutRandom            - Non Exhaustive (rounds)
-*       - TWOFOLDSQ : twoFoldOnSequences 
-*       - TWOFOLD : twoFoldHalfActors               
-*       - TWOFOLDS : twoFoldActorsTrainingSet
+*       - LOAOR : leaveOneActorOutRandom            - Non Exhaustive (number of rounds)
+*       - TWOFOLDSQ : twoFoldOnSequences            - Exhaustive
+*       - TWOFOLD : twoFoldHalfActors               - Exhaustive
+*       - TWOFOLDS : twoFoldActorsTrainingSet       - Exhaustive
 */
 #define LOSO
 
@@ -82,7 +82,7 @@ namespace SampleUsage
             string filename = "logs/result_";
 
 
-            //Here are all tests already implemented, you can change which test is executed by changing the defines at the beginning of the file.
+            //Here are all tests already implemented, you can change which test is executed by changing the #define at the beginning of the file.
 
 #if LOSO
             result = ValidationTest.leaveOneSequenceOut(dataset, learning_params);
@@ -149,7 +149,7 @@ namespace SampleUsage
             learning_params.ClassLabels = dataset.Labels;
             learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
             learning_params.InitialK = 8;
-            learning_params.FeatureSize = nbOfJoints * 3;
+            learning_params.FeatureSize = nbOfJoints * 3;                               //nbOfJoints * dim(xyz)
 #endif
 #if WEIZMANN
 
