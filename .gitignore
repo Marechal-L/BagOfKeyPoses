@@ -11,4 +11,4 @@
 *.user
 /obj
 /bin
-/EvolutionnaryAlgorithm
+/EvolutionnaryAlgorithm/*
