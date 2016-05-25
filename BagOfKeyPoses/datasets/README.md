@@ -10,7 +10,7 @@ http://research.microsoft.com/en-us/um/people/zliu/actionrecorsrc/
 We used the Skeleton Data in real world coordinates from "MSR Action3D Dataset" with 20 action types and 10 subjects.
 Direct download : http://research.microsoft.com/en-us/um/people/zliu/actionrecorsrc/MSRAction3DSkeletonReal3D.rar
 
-Only the a13_s09_e02_skeleton3D.txt file is removed during the loading because it contains only zeros.
+Only the sequence in the a13_s09_e02_skeleton3D.txt file is removed during the loading because it contains only zeros.
 
 Actions as Space-Time Shapes - Weizmann
 ----------------------------

@@ -1,5 +1,5 @@
 ﻿/*
-   Copyright (C) 2016 Ludovic Marechal and Francisco Flórez-Revuelta
+   Copyright (C) 2014 Alexandros Andre Chaaraoui
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,45 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-
-/*
-    You can change the Dataset and the Validation method below.
- */
-
-/*
-*   Define values for the Dataset 
-*       - MSR (MSR Action3D Dataset - http://research.microsoft.com/en-us/um/people/zliu/actionrecorsrc/ - Files : Skeleton Data in real world coordinates)
-*           Folders : AS1, AS2, AS3 and AS
-*       - WEIZMANN (Actions as Space-Time Shapes - http://www.wisdom.weizmann.ac.il/~vision/SpaceTimeActions.html - File matlab : http://www.wisdom.weizmann.ac.il/~vision/VideoAnalysis/Demos/SpaceTimeActions/DB/classification_masks.mat)
-*           Folders : Weizmann_contours and Weizmann_contours - without skip
- */
-#define MSR
-
-/*
-*   Leave One Out definition : https://en.wikipedia.org/wiki/Cross-validation_(statistics)#Leave-one-out_cross-validation
-*   2-Fold definition : https://en.wikipedia.org/wiki/Cross-validation_(statistics)#2-fold_cross-validation   
-*   
-*   Define values for the Validation methods
-*       - LOSO : leaveOneSequenceOut                - Exhaustive          
-*       - LOSOR : leaveOneSequenceOutRandom         - Non Exhaustive (number of rounds)
-*       - LOAO : leaveOneActorOut                   - Exhaustive
-*       - LOAOR : leaveOneActorOutRandom            - Non Exhaustive (number of rounds)
-*       - TWOFOLDSQ : twoFoldOnSequences            - Exhaustive
-*       - TWOFOLD : twoFoldHalfActors               - Exhaustive
-*       - TWOFOLDS : twoFoldActorsTrainingSet       - Exhaustive
-*/
-#define LOSO
-
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Util;
 using BagOfKeyPoses;
-using Parser;
-using Validator;
-using Sequence = System.Collections.Generic.List<double[]>;
 using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.List<System.Collections.Generic.List<double[]>>>;
 
 namespace SampleUsage
@@ -60,115 +27,228 @@ namespace SampleUsage
     {
         static void Main(string[] args)
         {
-            // Run usage sample.
-            validateDataset();
-
+            // Run usage samples.
+            sequenceBasedSimpleSample();
+            sequenceBasedAdvancedSample();
+            continuousRecognitionSample();
             Console.ReadKey();
         }
 
         /// <summary>
-        /// This sample shows how to load the dataset from a directory and how to perform a cross validation.
+        /// In this simple usage sample of the Bag of Key Poses learning method, a set of training and a set of testing sequences are used to apply 
+        /// template-based matching based on the previously learned model and Dynamic-time-warping sequence alignment.
         /// </summary>
-        private static void validateDataset()
+        private static void sequenceBasedSimpleSample()
         {
-            LearningParams learning_params;
+            Console.Write("sequenceBasedSimpleSample : ");
 
-            //Load the dataset
-            Dataset dataset = loadDataset(out learning_params);
+            // Prepare learning parameters.
+            LearningParams learning_params = new LearningParams();
+            List<string> class_labels = new List<string>();
+            class_labels.Add("red");
+            class_labels.Add("green");
+            class_labels.Add("blue");
+            learning_params.ClassLabels = class_labels;
+            learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
+            // K, the number of key poses per class, depends on the number of samples and desired generality, normally between 10 and 100 
+            // for thousands to tens of thousands of samples.
+            learning_params.InitialK = 5;
+            learning_params.FeatureSize = 3;
 
-            ResultSet result = null;
+            // Prepare train data.
+            double[] red_feature = new double[] { 1, 0, 0 };
+            double[] green_feature = new double[] { 0, 1, 0 };
+            double[] blue_feature = new double[] { 0, 0, 1 };
+            List<double[]> red_sequence = new List<double[]>();
+            List<double[]> green_sequence = new List<double[]>();
+            List<double[]> blue_sequence = new List<double[]>();
+            for (int i = 0; i < 100; ++i) 
+            {
+                red_sequence.Add(red_feature);
+                green_sequence.Add(green_feature);
+                blue_sequence.Add(blue_feature);
+            }
+
+            TrainDataType train_data = new TrainDataType();
+            train_data["red"].Add(red_sequence);
+            train_data["green"].Add(green_sequence);
+            train_data["blue"].Add(blue_sequence);
+
+            // Train.
+            BoKP bokp = new BoKP(learning_params);
+            bokp.Train(train_data.Dictionary);
             
-            //You can change here the save path for the result.
-            string filename = "logs/result_";
+            // Prepare test sequence.
+            double[] orange_feature = new double[] { 0.9, 0.3, 0.1 };
+            List<double[]> orange_sequence = new List<double[]>();
+            for (int i = 0; i < 100; ++i) orange_sequence.Add(orange_feature);
 
+            // Test.
+            string recognition = bokp.EvaluateSequence(orange_sequence);
 
-            //Here are all tests already implemented, you can change which test is executed by changing the #define at the beginning of the file.
-
-#if LOSO
-            result = ValidationTest.leaveOneSequenceOut(dataset, learning_params);
-            Console.Write("leaveOneSequenceOut : ");
-            filename += "LOSO";
-#endif
-#if LOSOR
-            result = ValidationTest.leaveOneSequenceOutRandom(dataset, learning_params,20);
-            Console.Write("leaveOneSequenceOutRandom : ");
-            filename += "LOSOR";
-#endif
-#if LOAO
-            result = ValidationTest.leaveOneActorOut(dataset, learning_params);
-            Console.Write("leaveOneActorOut : ");
-            filename += "LOAO";
-#endif
-#if LOAOR
-            result = ValidationTest.leaveOneActorOutRandom(dataset, learning_params);
-            Console.Write("leaveOneActorOutRandom : ");
-            filename += "LOAOR";
-#endif
-#if TWOFOLDSQ
-            result = ValidationTest.twoFoldOnSequences(dataset, learning_params, 50);
-            Console.Write("twoFoldOnSequences : ");
-            filename += "TWOFOLDSQ";
-#endif
-#if TWOFOLD
-            result = ValidationTest.twoFoldHalfActors(dataset, learning_params);
-            Console.WriteLine("twoFoldHalfActors : ");
-            filename += "TWOFOLD";
-#endif
-#if TWOFOLDSET
-            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" });
-            Console.Write("twoFoldActorsTrainingSet : ");
-            filename += "TWOFOLDSET";
-#endif
-
-            //Display the result on the console
-            Console.WriteLine(result);
-
-            //Print the result into a file
-            //result.fileOutput(filename+".log");
+            // Print result.
+            Console.WriteLine("The test sequence has been recognized as " + recognition);
         }
 
         /// <summary>
-        /// Load a dataset and initializes the learning params 
+        /// This sample adds feature fusion and source weights to the previous one.
         /// </summary>
-        private static Dataset loadDataset(out LearningParams learning_params)
+        private static void sequenceBasedAdvancedSample()
         {
-#if MSR
-            //Number of joints of a skeleton
-            int nbOfJoints = 20;
+            Console.Write("sequenceBasedAdvancedSample : ");
 
-            Console.WriteLine("Dataset loading...");
-
-            //Load Dataset of Skeletons
-            Dataset dataset = DatasetParser.loadDatasetSkeleton(nbOfJoints, "../../../datasets/MSR/AS", ' ');
-
-            //Normalisation
-            dataset.normaliseSkeletons();
-
-            //Init learning_params
-            learning_params = new LearningParams();
-            learning_params.ClassLabels = dataset.Labels;
+            // Prepare learning parameters.
+            LearningParams learning_params = new LearningParams();
+            List<string> class_labels = new List<string>();
+            class_labels.Add("red");
+            class_labels.Add("green");
+            class_labels.Add("blue");
+            learning_params.ClassLabels = class_labels;
             learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
-            learning_params.InitialK = 8;
-            learning_params.FeatureSize = nbOfJoints * 3;                               //nbOfJoints * dim(xyz)
-#endif
-#if WEIZMANN
+            // K depends on the number of samples and desired generality, normally between 10 and 100 for thousands to tens of thousands of samples.
+            learning_params.InitialK = 5;
+            List<string> sources = new List<string>();
+            sources.Add("source1");
+            sources.Add("source2");
+            learning_params.Sources = sources;
+            AssociativeArray<string, int> feature_sizes = new AssociativeArray<string, int>();
+            feature_sizes["source1"] = 3;
+            feature_sizes["source2"] = 3;
+            learning_params.FeatureSizes = feature_sizes;
 
-            // Number of pie pieces (RadialAdjustment)
-            Parser.ContourSelection.NUM_PIECES = 14;
+            // Weights can be learned in different ways, an easy option is to apply a test for each of the sources and use the success rate of each
+            // class normalized across data sources. For instance, if camera 1 obtains 80% for class 1 and 70% for class 2, and camera 2 obtains 60% 
+            // for class 1 and 70% for class 2, we would assign respectively 80/140 and 70/140 to camera 1 and 60/140 and 70/140 to camera 2.
+            //
+            // For greater detail, see weighted feature fusion scheme at Chaaraoui, A. A., Padilla-López, J. R., Ferrández-Pastor, F. J., 
+            // Nieto-Hidalgo, M., & Flórez-Revuelta, F. (2014). A Vision-Based System for Intelligent Monitoring: Human Behaviour Analysis and 
+            // Privacy by Context. Sensors, 14(5), 8895-8925.
+            var source_weights = new AssociativeMatrix<string, string, double>();
+            source_weights["source1", "red"] = 0.8;
+            source_weights["source1", "green"] = 0.5;
+            source_weights["source1", "blue"] = 0;
+            source_weights["source2", "red"] = 0.2;
+            source_weights["source2", "green"] = 0.5;
+            source_weights["source2", "blue"] = 1;
+            learning_params.SourceWeights = source_weights;
+            learning_params.UseSourceWeights = true;
 
-            Console.WriteLine("Dataset loading...");
-            //Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../datasets/Weizmann/Weizmann_contours", ' ');
-            Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../datasets/Weizmann/Weizmann_contours - without skip", ' ');
-            
-            //Init learning_params
-            learning_params = new LearningParams();
-            learning_params.ClassLabels = dataset.Labels;
+            // Prepare train data (features are obtained from two sources and concatenated).
+            double[] red_feature = new double[] { 1, 0, 0, 1, 0, 0 };
+            double[] green_feature = new double[] { 0, 1, 0, 0, 1, 0 };
+            double[] blue_feature = new double[] { 0, 0, 1, 0, 0, 1 };
+            List<double[]> red_sequence = new List<double[]>();
+            List<double[]> green_sequence = new List<double[]>();
+            List<double[]> blue_sequence = new List<double[]>();
+            for (int i = 0; i < 100; ++i)
+            {
+                red_sequence.Add(red_feature);
+                green_sequence.Add(green_feature);
+                blue_sequence.Add(blue_feature);
+            }
+
+            TrainDataType train_data = new TrainDataType();
+            train_data["red"].Add(red_sequence);
+            train_data["green"].Add(green_sequence);
+            train_data["blue"].Add(blue_sequence);
+
+            // Train.
+            BoKP bokp = new BoKP(learning_params);
+            bokp.Train(train_data.Dictionary);
+
+            // Prepare test sequence.
+            double[] orange_feature = new double[] { 0.9, 0.3, 0.9, 0.3, 0.3, 0.1 };
+            List<double[]> orange_sequence = new List<double[]>();
+            for (int i = 0; i < 100; ++i) orange_sequence.Add(orange_feature);
+
+            // Test.
+            string recognition = bokp.EvaluateSequence(orange_sequence);
+
+            // Print result.
+            Console.WriteLine("The test sequence has been recognized as " + recognition);
+        }
+
+        /// <summary>
+        /// This sample shows how continuous recognition is performed. Note that this type of recognition is based
+        /// on segment analysis (instead of frame-by-frame or sequence-based recognition) and a sliding window technique.
+        /// (Learning doesn't change, but additional parameters are set.)
+        /// </summary>
+        private static void continuousRecognitionSample()
+        {
+            Console.Write("continuousRecognitionSample : ");
+
+            // Prepare learning parameters.
+            LearningParams learning_params = new LearningParams();
+            List<string> class_labels = new List<string>();
+            class_labels.Add("red");
+            class_labels.Add("green");
+            class_labels.Add("blue");
+            learning_params.ClassLabels = class_labels;
             learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
-            learning_params.InitialK = 8;
-            learning_params.FeatureSize = Parser.ContourSelection.NUM_PIECES;
-#endif
+            // K depends on the number of samples and desired generality, normally between 10 and 100 for thousands to tens of thousands of samples.
+            learning_params.InitialK = 5;
+            learning_params.FeatureSize = 3;
+            // Minimum distance threshold that has to be reached by sequence alimgnet to consider the segment to be the matched class.
+            // Typically in the order of hundreds (Note that scale 10^4 is employed).
+            learning_params.SetDistThresholdsSelection(400);
 
-            return dataset;
+            // Minimum class evidence value that has to be reached to obtain a class zone. Typically in the order of hundreds (Note that
+            // a scale of 10^3 is employed).
+            learning_params.SetEvidThresholdsSelection(300);
+            learning_params.UseZones = true;
+
+            // Sliding window
+            learning_params.MinFrames = 5;
+            learning_params.MaxFrames = 35;
+
+            // Prepare train data.
+            double[] red_feature = new double[] { 1, 0, 0 };
+            double[] green_feature = new double[] { 0, 1, 0 };
+            double[] blue_feature = new double[] { 0, 0, 1 };
+            List<double[]> red_sequence = new List<double[]>();
+            List<double[]> green_sequence = new List<double[]>();
+            List<double[]> blue_sequence = new List<double[]>();
+            for (int i = 0; i < 100; ++i)
+            {
+                red_sequence.Add(red_feature);
+                green_sequence.Add(green_feature);
+                blue_sequence.Add(blue_feature);
+            }
+
+            TrainDataType train_data = new TrainDataType();
+            train_data["red"].Add(red_sequence);
+            train_data["green"].Add(green_sequence);
+            train_data["blue"].Add(blue_sequence);
+
+            // Train.
+            BoKP bokp = new BoKP(learning_params);
+            bokp.Train(train_data.Dictionary);
+
+            // Prepare test sequence.
+            double[] orange_feature = new double[] { 0.6, 0.3, 0.1 };
+            List<double[]> orange_sequence = new List<double[]>();
+
+            //We make evolve the orange_feature by adding 0.005 to the green value per frame. 
+            for (int i = 0; i < 100; ++i)
+            {
+                orange_feature[1] += 0.5 / 100.0;
+                orange_sequence.Add(new double[] { orange_feature[0], orange_feature[1], orange_feature[2] });
+                Console.WriteLine(i + " : " + orange_feature[0] + " " + orange_feature[1] + " " + orange_feature[2]);
+            }
+
+            // Test.
+            List<string> recognition = bokp.EvaluateCHARSequence(orange_sequence);
+
+            // Print result.
+            Console.WriteLine("The test sequence has been recognized as: ");
+            int k = 0;
+            foreach (string frame in recognition)
+            {
+                Console.WriteLine(k+" : "+frame);
+                k++;
+            }
+
+            //There is an Unkmown period from the frame 55 to 64 because the green value is between 0.58 and 0.62
         }
     }
 }
