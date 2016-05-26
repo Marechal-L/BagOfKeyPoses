@@ -20,17 +20,14 @@
 
 /*
 *   Define values for the Dataset 
-*       - MSR (MSR Action3D Dataset - http://research.microsoft.com/en-us/um/people/zliu/actionrecorsrc/ - Files : Skeleton Data in real world coordinates)
-*           Folders : AS1, AS2, AS3 and AS
-*       - WEIZMANN (Actions as Space-Time Shapes - http://www.wisdom.weizmann.ac.il/~vision/SpaceTimeActions.html - File matlab : http://www.wisdom.weizmann.ac.il/~vision/VideoAnalysis/Demos/SpaceTimeActions/DB/classification_masks.mat)
-*           Folders : Weizmann_contours and Weizmann_contours - without skip
- */
+*       - MSR
+*       - WEIZMANN
+*       
+*      Take a look at the README for more informations. 
+*/
 #define MSR
 
 /*
-*   Leave One Out definition : https://en.wikipedia.org/wiki/Cross-validation_(statistics)#Leave-one-out_cross-validation
-*   2-Fold definition : https://en.wikipedia.org/wiki/Cross-validation_(statistics)#2-fold_cross-validation   
-*   
 *   Define values for the Validation methods
 *       - LOSO : leaveOneSequenceOut                - Exhaustive          
 *       - LOSOR : leaveOneSequenceOutRandom         - Non Exhaustive (number of rounds)
@@ -39,6 +36,8 @@
 *       - TWOFOLDSQ : twoFoldOnSequences            - Exhaustive
 *       - TWOFOLD : twoFoldHalfActors               - Exhaustive
 *       - TWOFOLDS : twoFoldActorsTrainingSet       - Exhaustive
+*       
+*      Take a look at the README for more informations. 
 */
 #define LOSOR
 
@@ -56,7 +55,7 @@ using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.L
 
 namespace SampleUsage
 {
-    class Program
+    class SampleUsage_1
     {
         static void Main(string[] args)
         {
@@ -77,7 +76,7 @@ namespace SampleUsage
             Dataset dataset = loadDataset(out learning_params);
 
             ResultSet result = null;
-            
+
             //You can change here the save path for the result.
             string filename = "logs/result_";
 
@@ -90,7 +89,7 @@ namespace SampleUsage
             filename += "LOSO";
 #endif
 #if LOSOR
-            result = ValidationTest.leaveOneSequenceOutRandom(dataset, learning_params,20);
+            result = ValidationTest.leaveOneSequenceOutRandom(dataset, learning_params, 20);
             Console.Write("leaveOneSequenceOutRandom : ");
             filename += "LOSOR";
 #endif
@@ -122,7 +121,7 @@ namespace SampleUsage
 
             //Display the final result on the console.
             Console.WriteLine(result);
-            
+
             //Print the result into a file
             //result.fileOutput(filename+".log");
         }

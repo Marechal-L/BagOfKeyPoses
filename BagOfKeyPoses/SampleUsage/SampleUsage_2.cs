@@ -23,7 +23,7 @@ using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.L
 
 namespace SampleUsage
 {
-    class Program
+    class SampleUsage_2
     {
         static void Main(string[] args)
         {
@@ -233,13 +233,14 @@ namespace SampleUsage
             {
                 orange_feature[1] += 0.5 / 100.0;
                 orange_sequence.Add(new double[] { orange_feature[0], orange_feature[1], orange_feature[2] });
-                Console.WriteLine(i + " : " + orange_feature[0] + " " + orange_feature[1] + " " + orange_feature[2]);
+                //Console.WriteLine(i + " : " + orange_feature[0] + " " + orange_feature[1] + " " + orange_feature[2]);
             }
 
             // Test.
             List<string> recognition = bokp.EvaluateCHARSequence(orange_sequence);
 
             // Print result.
+            //There is an Unkmown period from the frame 55 to 64 because the green value is between 0.58 and 0.62
             Console.WriteLine("The test sequence has been recognized as: ");
             int k = 0;
             foreach (string frame in recognition)
@@ -248,7 +249,7 @@ namespace SampleUsage
                 k++;
             }
 
-            //There is an Unkmown period from the frame 55 to 64 because the green value is between 0.58 and 0.62
+            
         }
     }
 }
