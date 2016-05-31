@@ -29,6 +29,28 @@ namespace Parser
             this.Subjects = subjects;
         }
 
+        public Dataset(Dataset dataset)
+        {
+            Labels = new List<string>();
+            Subjects = new List<string>();
+            Data = new List<DatasetEntry>();
+
+            foreach(string label in dataset.Labels)
+            {
+                Labels.Add(label);
+            }
+
+            foreach (string subject in dataset.Subjects)
+            {
+                Subjects.Add(subject);
+            }
+
+            /*foreach (DatasetEntry item in dataset.Data)
+            {
+                Data.Add(new DatasetEntry(item));
+            }*/
+        }
+
         /// <summary>
         /// Nomalise each skeleton of each sequence of the dataset.
         /// <see cref="SkeletonNormalisation.normaliseSequenceSkeleton"/>
@@ -300,6 +322,19 @@ namespace Parser
             this.Subject = subject;
             this.Episode = episode;
             this.Sequence = sequence;
+        }
+
+        public DatasetEntry(DatasetEntry datasetEntry)
+        {
+            this.Label = datasetEntry.Label;
+            this.Subject = datasetEntry.Subject;
+            this.Episode = datasetEntry.Episode;
+            this.Sequence = new Sequence();
+
+            foreach (var frame in datasetEntry.Sequence)
+            {
+                Sequence.Add(frame);
+            }
         }
     }
 

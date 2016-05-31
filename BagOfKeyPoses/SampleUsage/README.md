@@ -6,7 +6,7 @@ Sample Usage 1
 
 This sample performs a validation on real datasets and give real validation results.
 
-Simple diagram representing the process pipeline from the entry point to the results. 
+Here is a Simple diagram representing the process pipeline from the entry point to the results. 
 
 ![Validation pipeline](pipeline.png)
 

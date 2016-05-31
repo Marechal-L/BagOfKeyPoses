@@ -148,7 +148,7 @@ namespace SampleUsage
             learning_params.ClassLabels = dataset.Labels;
             learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
             learning_params.InitialK = 8;
-            learning_params.FeatureSize = nbOfJoints * 3;                               //nbOfJoints * dim(xyz)
+            learning_params.FeatureSize = nbOfJoints * 3;                                //nbOfJoints * dim(xyz)
 #endif
 #if WEIZMANN
 
