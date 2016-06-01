@@ -37,21 +37,23 @@ namespace EvolutionnaryAlgorithm
 
             int populationSize = 10, offspringSize = 20, crossover;
             int generations_without_change = 0;
+            Individual individual, equalIndividual;
 
             //Create initial population
             Population population = new Population(populationSize, offspringSize, NB_FEATURES);
-            Individual individual, equalIndividual;
-
+            
+            //Evalutate Fitness
             population.evaluateFitness();
+
+            //Order
             population.order(populationSize);
             Console.WriteLine(population);
 
             double prev_best_fitness = population.Generation[0].FitnessScore;
 
-
-
             int i=0;
             do{
+               
                 for (crossover = 0; crossover < offspringSize; ++crossover)
                 {
                     //population[popSize + crossover].generation = generation;
@@ -99,13 +101,22 @@ namespace EvolutionnaryAlgorithm
 
 
 
-            Console.WriteLine("Best Individual (gen. "+i+" ) : ");
+            //Writing of the results on the console and into a file
+            string s = "Best Individual (gen. " + i + " ) : " + population.Generation[0] + "\n";
+
             foreach (var item in population.Generation[0].Genes)
             {
-                Console.Write(item + " ");
+                s += item + " ";
             }
-            Console.WriteLine(population.Generation[0]);
-            
+
+            Console.WriteLine(s);
+
+            string filename = "GeneticResult.log";
+            System.IO.File.Create(filename).Close();
+
+            System.IO.StreamWriter writer = new System.IO.StreamWriter(filename);
+            writer.Write(s);
+            writer.Close();
 
             Console.ReadKey();
         }
@@ -115,12 +126,11 @@ namespace EvolutionnaryAlgorithm
             learning_params.FeatureSize = individual.getNbOfOnes() * DIM_FEATURES;
             modifyDataset(individual);
 
-
             double old_f = individual.FitnessScore;
 
-            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
+            //ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
 
-            double new_f = result.getAverage();
+            double new_f = individual.getNbOfOnes();//result.getAverage();
 
             if(new_f > old_f)
             {
@@ -192,16 +202,6 @@ namespace EvolutionnaryAlgorithm
             {
                 Generation[i] = new Individual();
             }
-        }
-
-        public void selectNextGeneration()
-        { 
-            
-        }
-
-        public void combine()
-        {
-
         }
 
         public Individual equal(Individual individual)
@@ -306,6 +306,16 @@ namespace EvolutionnaryAlgorithm
         public override bool Equals(Object o)
         {
             return (ReferenceEquals(this, o)) && (this.Genes.Equals(((Individual)o).Genes));
+        }
+
+        public static Boolean operator >(Individual o1, Individual o2)
+        {
+            return  (o1.FitnessScore > o2.FitnessScore) || (o1.FitnessScore == o2.FitnessScore && o1.getNbOfOnes() < o2.getNbOfOnes());
+        }
+
+        public static Boolean operator <(Individual o1, Individual o2)
+        {
+            return !(o1 > o2);
         }
     }
 }
