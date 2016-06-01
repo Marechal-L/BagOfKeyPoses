@@ -12,19 +12,21 @@ namespace EvolutionnaryAlgorithm
 {
     class Program
     {
-        private static LearningParams learning_params;
-        private static Dataset realDataset, modifiedDataset;
+        public static LearningParams learning_params;
+
+
+        public static Dataset realDataset;                 //Dataset generated from txt files.
+        public static Dataset modifiedDataset;             //Dataset without specified features.
 
         static int NB_FEATURES = 20;
-        static int DIM_FEATURES = 3;
+        static int DIM_FEATURES = 3;                        //Dimension of each feature
 
 
+        //Entry point of the evolutionnary algorithm.
         static void Main(string[] args)
         {
-
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../datasets/MSR/AS1", ' ');
             
-
             learning_params = new LearningParams();
             learning_params.ClassLabels = realDataset.Labels;
             learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
@@ -32,10 +34,9 @@ namespace EvolutionnaryAlgorithm
 
             realDataset.normaliseSkeletons();
 
-
+            //Parameters of the evolutionnary algorithm
             Individual.NB_FEATURES = NB_FEATURES;
-
-            int populationSize = 10, offspringSize = 20, crossover;
+            int populationSize = 10, offspringSize = 20;
             int generations_without_change = 0;
             Individual individual, equalIndividual;
 
@@ -51,14 +52,17 @@ namespace EvolutionnaryAlgorithm
 
             double prev_best_fitness = population.Generation[0].FitnessScore;
 
+            //Main loop of the algorithm
             int i=0;
             do{
-               
-                for (crossover = 0; crossover < offspringSize; ++crossover)
+                for (int crossover = 0; crossover < offspringSize; ++crossover)
                 {
-                    //population[popSize + crossover].generation = generation;
+                    //Recombination
                     UsualFunctions.Recombine(population, ref population.Generation[populationSize + crossover]);
+                    
                     individual = population.Generation[populationSize + crossover];
+
+                    //Mutation of the new individual
                     individual.mutate();
 
                     equalIndividual = population.equal(individual);
@@ -75,11 +79,10 @@ namespace EvolutionnaryAlgorithm
                     }
                 }
 
+                //Ordering the all population according the fitness
                 population.order(populationSize + offspringSize);
-                Console.WriteLine();
-                Console.WriteLine(population.Generation[populationSize-1]);
-                Console.WriteLine(population.Generation[0]);
 
+                //End loop verifications
                 if (prev_best_fitness != population.Generation[0].FitnessScore)
                 {
                     prev_best_fitness = population.Generation[0].FitnessScore;
@@ -90,25 +93,27 @@ namespace EvolutionnaryAlgorithm
                     generations_without_change++;
                 }
                 
-                i++;
+                
+
+
+                //Displaying informations
+                Console.WriteLine();
+                Console.WriteLine("Worst Individual : " + population.Generation[populationSize - 1]);
+                Console.WriteLine("Best individual : " + population.Generation[0]);
 
                 Console.WriteLine();
                 Console.WriteLine("generations_without_change : "+generations_without_change);
                 Console.WriteLine("Generation : "+i);
                 Console.WriteLine();
 
+                i++;
             }while(generations_without_change < 10 && i < 500);
 
 
 
             //Writing of the results on the console and into a file
             string s = "Best Individual (gen. " + i + " ) : " + population.Generation[0] + "\n";
-
-            foreach (var item in population.Generation[0].Genes)
-            {
-                s += item + " ";
-            }
-
+            s += "\nAll population : \n" + population;
             Console.WriteLine(s);
 
             string filename = "GeneticResult.log";
@@ -121,6 +126,10 @@ namespace EvolutionnaryAlgorithm
             Console.ReadKey();
         }
 
+        /// <summary>
+        /// Evaluate the fitness score of the given individual
+        /// </summary>
+        /// <returns>Boolean representing if the score is better or not</returns> 
         public static bool evaluateFitness(Individual individual)
         {
             learning_params.FeatureSize = individual.getNbOfOnes() * DIM_FEATURES;
@@ -128,9 +137,9 @@ namespace EvolutionnaryAlgorithm
 
             double old_f = individual.FitnessScore;
 
-            //ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
+            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
 
-            double new_f = individual.getNbOfOnes();//result.getAverage();
+            double new_f = result.getAverage();
 
             if(new_f > old_f)
             {
@@ -140,6 +149,9 @@ namespace EvolutionnaryAlgorithm
             return false;
         }
 
+        /// <summary>
+        /// Modifiy the dataset by removing disabled features according to the given individual.
+        /// </summary>
         public static void modifyDataset(Individual individual)
         {
 			modifiedDataset = new Dataset(realDataset);
@@ -154,6 +166,9 @@ namespace EvolutionnaryAlgorithm
 			}
         }
 
+        /// <summary>
+        /// Removes disabled features from a sequence of frames
+        /// </summary>
         public static Sequence removeDisabledFeatures(Individual individual, Sequence sequence) 
         {
             int nbOfActivated = individual.getNbOfOnes();
@@ -181,6 +196,9 @@ namespace EvolutionnaryAlgorithm
         }
     }
 
+    /// <summary>
+    /// Represents a population of individuals
+    /// </summary>
     class Population
     {
         public Individual[] Generation;
@@ -204,6 +222,9 @@ namespace EvolutionnaryAlgorithm
             }
         }
 
+        /// <summary>
+        /// Returns an individual equal to the given individual if exists.
+        /// </summary>
         public Individual equal(Individual individual)
         {
             for (int i = 0; i < PopulationSize; i++)
@@ -214,6 +235,9 @@ namespace EvolutionnaryAlgorithm
             return null;
         }
 
+        /// <summary>
+        /// Evaluate the fitness of all the population
+        /// </summary>
         public void evaluateFitness()
         {
             for (int i = 0; i < PopulationSize; i++)
@@ -222,6 +246,9 @@ namespace EvolutionnaryAlgorithm
             }
         }
 
+        /// <summary>
+        /// Mutate each individual of the population
+        /// </summary>
         public void mutate()
         {
             foreach(Individual individual in Generation)
@@ -230,6 +257,9 @@ namespace EvolutionnaryAlgorithm
             }
         }
 
+        /// <summary>
+        /// Order the population by fitness
+        /// </summary>
         public void order(int subset)
         {
             if (subset != PopulationSize + OffspringSize)
@@ -250,21 +280,28 @@ namespace EvolutionnaryAlgorithm
         {
             string s = "";
 
-            foreach (Individual individual in Generation)
+            for (int i = 0; i < PopulationSize; i++)
             {
-                s += ""+individual+"\n";
+                if (Generation[i] == null)
+                    break;
+                s += "" + Generation[i] + "\n";
             }
-
             return s;
         }
     }
 
+    /// <summary>
+    /// Individual of the population
+    /// </summary>
     class Individual
     {
         public static int NB_FEATURES = 1;
         public bool[] Genes;
         public double FitnessScore = -1;
 
+        /// <summary>
+        /// Create an individual as random as possible by applying several mutations.
+        /// </summary>
         public Individual()
         {
             Genes = new bool[NB_FEATURES];
@@ -280,11 +317,17 @@ namespace EvolutionnaryAlgorithm
             this.Genes = (bool[]) individual.Genes.Clone();
         }
 
+        /// <summary>
+        /// Returns the number of activated features.
+        /// </summary>
         public int getNbOfOnes()
         {
             return Genes.Count(x => x);
         }
 
+        /// <summary>
+        /// Mutate several features of the individual.
+        /// </summary>
         public void mutate()
         {
             double PROB_MUTATION_FEATURES = (double)UsualFunctions.random.NextDouble() * 3.0 / NB_FEATURES;
@@ -300,12 +343,38 @@ namespace EvolutionnaryAlgorithm
 
         public override string ToString()
         {
-            return ""+FitnessScore;
+            string s = "" + FitnessScore + " : ";
+            foreach (var val in Genes)
+            {
+                s += (val)?("1"):("0");
+            }
+            
+            return s;
         }
 
+        /// <summary>
+        /// Individuals are equals if the genes are equals.
+        /// </summary>
         public override bool Equals(Object o)
         {
-            return (ReferenceEquals(this, o)) && (this.Genes.Equals(((Individual)o).Genes));
+            if (ReferenceEquals(this, o))
+            {
+                Individual ind = (Individual)o;
+
+                if (ind.Genes.Length != this.Genes.Length)
+                    return false;
+
+                for (int i = 0; i < ind.Genes.Length; i++)
+                {
+                    if (ind.Genes[i] != this.Genes[i])
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            return false;
         }
 
         public static Boolean operator >(Individual o1, Individual o2)

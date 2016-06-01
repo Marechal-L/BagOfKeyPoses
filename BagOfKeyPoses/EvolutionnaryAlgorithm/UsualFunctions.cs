@@ -144,6 +144,19 @@ namespace EvolutionnaryAlgorithm
                 throw new Exception("(UsualFunctions::RecombineJoints) Error occurred ( "+crossover_point+" is not a valid joint number ) : " + e.Message + " [" + e.InnerException + "]");
             }
         }
+
+        public static void RecombineJoints(Individual child, Individual mother, int crossover_point)
+        {
+            try
+            {
+                TreeNode node = tree.findValue(crossover_point);
+                node.recombineJoints(ref child.Genes, mother.Genes);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("(UsualFunctions::RecombineJoints) Error occurred ( " + crossover_point + " is not a valid joint number ) : " + e.Message + " [" + e.InnerException + "]");
+            }
+        }
     }
 
     /// <summary>
@@ -154,18 +167,27 @@ namespace EvolutionnaryAlgorithm
         public List<TreeNode> Children;
         public int Value;
 
+        /// <summary>
+        /// Initialise a simple node by giving a value
+        /// </summary>
         public TreeNode(int val)
         {
             Value = val;
             Children = new List<TreeNode>();
         }
 
+        /// <summary>
+        /// Initialise a node by giving value and a children array.
+        /// </summary>
         public TreeNode(int val, TreeNode[] nodes)
         {
             Value = val;
             Children = nodes.ToList<TreeNode>();
         }
 
+        /// <summary>
+        /// Initialise a node by giving value and a single child.
+        /// </summary>
         public TreeNode(int val, TreeNode node)
         {
             Value = val;
@@ -178,6 +200,9 @@ namespace EvolutionnaryAlgorithm
             Children.Add(node);
         }
 
+        /// <summary>
+        /// Find a node in the tree by its value.
+        /// </summary>
         public TreeNode findValue(int value)
         {
             TreeNode tmp = null;
@@ -198,6 +223,9 @@ namespace EvolutionnaryAlgorithm
             return tmp;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void recombineJoints(ref Boolean[] child, Boolean[] adult)
         {
             child[Value] = adult[Value];
