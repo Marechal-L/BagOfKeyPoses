@@ -46,8 +46,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Util;
 using BagOfKeyPoses;
+using Util;
 using Parser;
 using Validator;
 using Sequence = System.Collections.Generic.List<double[]>;
@@ -57,7 +57,8 @@ namespace SampleUsage
 {
     class SampleUsage_1
     {
-        public static int RandomSeed = 526;
+        //public static int RandomSeed = 564;                               //Define a specific seed
+        public static int RandomSeed = new Random().Next();                 //Let the random be random
 
         static void Main(string[] args)
         {

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C5B7CE12-9068-40D2-AA2A-5E33FC64DDDC}</ProjectGuid>
+    <ProjectGuid>{937B2FF5-C691-4E09-9EC3-3E02163B3C7B}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EvolutionnaryAlgorithm</RootNamespace>
-    <AssemblyName>EvolutionnaryAlgorithm</AssemblyName>
+    <RootNamespace>EvolutionaryAlgorithm</RootNamespace>
+    <AssemblyName>EvolutionaryAlgorithm</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -35,13 +35,21 @@
     <StartupObject>EvolutionnaryAlgorithm.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
+    <Reference Include="BagOfKeyPoses">
+      <HintPath>..\..\BagOfKeyPoses_Library\BagOfKeyPoses\bin\Release\BagOfKeyPoses.dll</HintPath>
+    </Reference>
+    <Reference Include="Parser">
+      <HintPath>..\..\BagOfKeyPoses_Library\Parser\bin\Release\Parser.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Validator">
+      <HintPath>..\..\BagOfKeyPoses_Library\Validator\bin\Release\Validator.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -53,18 +61,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BagOfKeyPoses\BagOfKeyPoses.csproj">
-      <Project>{24cdd5ce-48fc-40d5-a909-658721a11708}</Project>
-      <Name>BagOfKeyPoses</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Parser\Parser.csproj">
-      <Project>{af6ce7ed-96d5-46c4-86b0-9fa4cf4304b7}</Project>
-      <Name>Parser</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Validator\Validator.csproj">
-      <Project>{81f8e358-9fb0-46f0-89cb-d469d43f1510}</Project>
-      <Name>Validator</Name>
-    </ProjectReference>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

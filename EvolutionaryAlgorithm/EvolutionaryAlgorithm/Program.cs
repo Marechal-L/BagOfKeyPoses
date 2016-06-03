@@ -1,12 +1,28 @@
-﻿using System;
+﻿/*
+   Copyright (C) 2016 Ludovic Marechal and Francisco Flórez-Revuelta
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BagOfKeyPoses;
 using Parser;
-using Sequence = System.Collections.Generic.List<double[]>;
 using Validator;
+using Sequence = System.Collections.Generic.List<double[]>;
 
 namespace EvolutionnaryAlgorithm
 {
@@ -21,13 +37,13 @@ namespace EvolutionnaryAlgorithm
         static int NB_FEATURES = 20;
         static int DIM_FEATURES = 3;                        //Dimension of each feature
         static int MAX_GENERATION_WITHOUT_CHANGE = 50;
-        static int MAX_GENERATION = 500;
+        static int MAX_GENERATION = 100;
 
 
         //Entry point of the evolutionnary algorithm.
         static void Main(string[] args)
         {
-            realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../datasets/MSR/AS1", ' ');
+            realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             
             learning_params = new LearningParams();
             learning_params.ClassLabels = realDataset.Labels;
@@ -81,7 +97,7 @@ namespace EvolutionnaryAlgorithm
                     }
                 }
 
-                //Ordering the all population according the fitness
+                //Ordering the all population according to the fitness
                 population.order(populationSize + offspringSize);
 
                 //End loop verifications
@@ -94,9 +110,6 @@ namespace EvolutionnaryAlgorithm
                 {
                     generations_without_change++;
                 }
-                
-                
-
 
                 //Displaying informations
                 Console.WriteLine();
@@ -109,12 +122,12 @@ namespace EvolutionnaryAlgorithm
                 Console.WriteLine();
 
                 generationNumber++;
-            } while (generations_without_change < 10 && generationNumber < 500);
+            } while (generations_without_change < MAX_GENERATION_WITHOUT_CHANGE && generationNumber < MAX_GENERATION);
 
 
 
             //Writing of the results on the console and into a file
-            string s = "Best Individual (gen. " + i + " ) : " + population.Generation[0] + "\n";
+            string s = "Best Individual (gen. " + generationNumber + " ) : " + population.Generation[0] + "\n";
             s += "\nAll population : \n" + population;
             Console.WriteLine(s);
 
@@ -307,6 +320,7 @@ namespace EvolutionnaryAlgorithm
         public Individual()
         {
             Genes = new bool[NB_FEATURES];
+
             int nbOfMutations = UsualFunctions.random.Next(NB_FEATURES);
             for (int i = 0; i < nbOfMutations; i++)
             {

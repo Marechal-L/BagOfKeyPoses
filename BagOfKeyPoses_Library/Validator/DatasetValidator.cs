@@ -1,4 +1,27 @@
-﻿//#define SAVE
+﻿/*
+   Copyright (C) 2016 Ludovic Marechal and Francisco Flórez-Revuelta
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+
+//Look at crossValidationResultSet() function for the purpose of replaying the validation.
+//Define value to set if the train model will be saved, loaded or executed normally.
+/*
+ * SAVE
+ * LOAD
+ */
+//#define SAVE
 
 using System;
 using System.Xml;
@@ -10,8 +33,6 @@ using Util;
 using Parser;
 using BagOfKeyPoses;
 using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.List<System.Collections.Generic.List<double[]>>>;
-
-
 
 namespace Validator
 {
@@ -405,20 +426,27 @@ namespace Validator
             Console.WriteLine("Training...");
             BoKP bokp = new BoKP(learning_params);
 
+            string folderName = "Config";
+            System.IO.Directory.CreateDirectory(folderName);
+
+            
 #if SAVE
+            //Train the model
             bokp.Train(trainData.Dictionary);
-            //Save the KeyPoses into a file.
+            
+            //Save the train config into a file.
             string folderName = "Config";
             System.IO.Directory.CreateDirectory(folderName);
             bokp.Config.ToXML().Save(folderName + "/TrainConfig_"+ FILE_ID +".xml");
-#elif CLASSIC
-             bokp.Train(trainData.Dictionary);
-#else
+#elif LOAD
+             //Train the model by loading a config file
             XmlDocument doc = new XmlDocument();
-            doc.Load("Config/TrainConfig_" + FILE_ID + ".xml");
+            doc.Load(folderName + "/TrainConfig_" + FILE_ID + ".xml");
             bokp.Config.LoadXML(doc);
+#else
+            //Train the model
+            bokp.Train(trainData.Dictionary);
 #endif
-            //FILE_ID++;
 
             //Evaluate each sequence
             Console.WriteLine("Testing...");
@@ -437,10 +465,10 @@ namespace Validator
             Console.WriteLine(resultSet);
 
             //Here you can print each results into a file
-            System.IO.Directory.CreateDirectory("results");
-            resultSet.fileOutput("results/result_"+FILE_ID+".log");
-            FILE_ID++;
+            //System.IO.Directory.CreateDirectory("results");
+            //resultSet.fileOutput("results/result_"+FILE_ID+".log");
 #endif
+            FILE_ID++;
             return resultSet;
         }
     }
