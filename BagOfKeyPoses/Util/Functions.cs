@@ -28,7 +28,8 @@ namespace Util
     public static class Functions
     {
         // Static
-        public static Random rand = new Random();           // Random generator for all key poses
+        public static int RandomSeed;
+        public static Random rand = new Random(RandomSeed);         // Random generator for all key poses
 
         /// <summary>
         /// Returns Manhattan distance.

@@ -17,8 +17,10 @@ namespace Parser
     /// </summary>
     public class Dataset
     {
+        public static int RandomSeed;
+
         public System.Collections.Generic.List<Parser.DatasetEntry> Data;
-        public Random rand = new Random();
+        public Random rand = new Random(RandomSeed);
         public List<string> Labels, Subjects;
 
         public Dataset() : this(new List<DatasetEntry>(), new List<string>(), new List<string>()) { }

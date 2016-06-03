@@ -10,7 +10,8 @@ namespace Util
     /// </summary>
     public static class Shuffler
     {
-        private static readonly Random rnd = new Random();
+        public static int RandomSeed;
+        private static readonly Random rnd = new Random(RandomSeed);
 
         public static void Shuffle<T>(this IList<T> list)
         {

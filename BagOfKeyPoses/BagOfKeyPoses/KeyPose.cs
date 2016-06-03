@@ -126,6 +126,22 @@ namespace BagOfKeyPoses
             return xml;
         }
 
+        public static KeyPose LoadXML(XmlElement rootNode)
+        {
+            string ID = rootNode.GetElementsByTagName("ID")[0].InnerText;
+            string ClassLabel = rootNode.GetElementsByTagName("action-class")[0].InnerText;
+            string feature_vector = rootNode.GetElementsByTagName("feature-vector")[0].InnerText;
+
+            string[] distances_string = feature_vector.Split(' ');
+
+
+            double[] distances_double = Array.ConvertAll(distances_string, double.Parse);
+
+            NextID = int.Parse(ID);
+
+            return new KeyPose(ClassLabel, distances_double);
+        }
+
         /// <summary>
         /// Compares the given feature to those of the keyposes and returns the closest key pose/nearest neighbor
         /// </summary>

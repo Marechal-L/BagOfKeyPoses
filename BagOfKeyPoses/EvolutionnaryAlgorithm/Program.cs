@@ -20,6 +20,8 @@ namespace EvolutionnaryAlgorithm
 
         static int NB_FEATURES = 20;
         static int DIM_FEATURES = 3;                        //Dimension of each feature
+        static int MAX_GENERATION_WITHOUT_CHANGE = 50;
+        static int MAX_GENERATION = 500;
 
 
         //Entry point of the evolutionnary algorithm.
@@ -53,7 +55,7 @@ namespace EvolutionnaryAlgorithm
             double prev_best_fitness = population.Generation[0].FitnessScore;
 
             //Main loop of the algorithm
-            int i=0;
+            int generationNumber=0;
             do{
                 for (int crossover = 0; crossover < offspringSize; ++crossover)
                 {
@@ -103,11 +105,11 @@ namespace EvolutionnaryAlgorithm
 
                 Console.WriteLine();
                 Console.WriteLine("generations_without_change : "+generations_without_change);
-                Console.WriteLine("Generation : "+i);
+                Console.WriteLine("Generation : " + generationNumber);
                 Console.WriteLine();
 
-                i++;
-            }while(generations_without_change < 10 && i < 500);
+                generationNumber++;
+            } while (generations_without_change < 10 && generationNumber < 500);
 
 
 

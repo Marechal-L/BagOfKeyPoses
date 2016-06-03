@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//#define SAVE
+
+using System;
+using System.Xml;
 using System.Linq;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Util;
 using Parser;
 using BagOfKeyPoses;
 using TrainDataType = Util.AssociativeArray<string, System.Collections.Generic.List<System.Collections.Generic.List<double[]>>>;
+
+
 
 namespace Validator
 {
@@ -399,7 +404,21 @@ namespace Validator
             //Create and train a new model
             Console.WriteLine("Training...");
             BoKP bokp = new BoKP(learning_params);
+
+#if SAVE
             bokp.Train(trainData.Dictionary);
+            //Save the KeyPoses into a file.
+            string folderName = "Config";
+            System.IO.Directory.CreateDirectory(folderName);
+            bokp.Config.ToXML().Save(folderName + "/TrainConfig_"+ FILE_ID +".xml");
+#elif CLASSIC
+             bokp.Train(trainData.Dictionary);
+#else
+            XmlDocument doc = new XmlDocument();
+            doc.Load("Config/TrainConfig_" + FILE_ID + ".xml");
+            bokp.Config.LoadXML(doc);
+#endif
+            //FILE_ID++;
 
             //Evaluate each sequence
             Console.WriteLine("Testing...");
@@ -418,9 +437,9 @@ namespace Validator
             Console.WriteLine(resultSet);
 
             //Here you can print each results into a file
-            
-            //resultSet.fileOutput("results/result_"+FILE_ID+".log");
-            //FILE_ID++;
+            System.IO.Directory.CreateDirectory("results");
+            resultSet.fileOutput("results/result_"+FILE_ID+".log");
+            FILE_ID++;
 #endif
             return resultSet;
         }

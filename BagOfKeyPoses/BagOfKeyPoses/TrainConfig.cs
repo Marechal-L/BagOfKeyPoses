@@ -182,7 +182,7 @@ namespace BagOfKeyPoses
         }     
 
         /// <summary>
-        /// Returns a XML document witht the matched key pose sequences and their action class information
+        /// Returns a XML document with the matched key pose sequences and their action class information
         /// </summary>
         /// <returns></returns>
         public XmlDocument MatchedKPSeqsToXML()
@@ -204,6 +204,95 @@ namespace BagOfKeyPoses
             }
 
             return xml; 
+        }
+
+        public XmlDocument ToXML()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<trainConfig></trainConfig>");
+
+            //For each class
+            foreach (var label in Params.ClassLabels)
+            {
+                //<classLabel>
+                XmlNode class_node = doc.CreateElement("classLabel");
+                XmlAttribute attribute = doc.CreateAttribute("value");
+                attribute.Value = label;
+                class_node.Attributes.Append(attribute);
+                
+
+
+                //  <SSE>
+                XmlNode element = doc.CreateElement("SSE");
+                attribute = doc.CreateAttribute("value");
+                attribute.Value = SSE[label]+"";
+                element.Attributes.Append(attribute);
+                class_node.AppendChild(element);
+
+                //  <MatchedKeyPoseSequences>
+                element = doc.CreateElement("MatchedKeyPoseSequences");
+                int i = 0;
+                foreach (KeyPoseSequence item in MatchedKeyPoseSequences[label])
+                {
+                    element.AppendChild(doc.ImportNode(item.ToXML(i).DocumentElement, true));
+                    i++;
+                }
+                class_node.AppendChild(element);
+
+                //  KeyPoses
+                element = doc.CreateElement("KeyPoses");
+                attribute = doc.CreateAttribute("name");
+                attribute.Value = label;
+                element.Attributes.Append(attribute);
+
+                foreach (var kp in KeyPoses[label])
+                {
+                    XmlDocument kpXml = kp.ToXML(i);
+                    element.AppendChild(doc.ImportNode(kpXml.DocumentElement, true));
+
+                    i++;
+                }
+                class_node.AppendChild(element);
+                
+                doc.DocumentElement.AppendChild(doc.ImportNode(class_node, true));
+            }
+
+            return doc;
+        }
+
+        //MatchedKeyPoseSequences
+
+
+        public void LoadXML(XmlDocument doc)
+        {
+            MatchedKeyPoseSequences = new Dictionary<string, List<KeyPoseSequence>>();
+            SSE = new AssociativeArray<string, double>();
+            KeyPoses = new Dictionary<string, List<KeyPose>>();
+
+            XmlNodeList label_nodes = doc.GetElementsByTagName("classLabel");
+
+            foreach (XmlElement item in label_nodes)
+            {
+                string label = item.Attributes["value"].Value;
+
+                MatchedKeyPoseSequences.Add(label, new List<KeyPoseSequence>());
+                KeyPoses.Add(label, new List<KeyPose>());
+
+                SSE[label] = double.Parse(item.GetElementsByTagName("SSE")[0].Attributes["value"].Value);
+
+                foreach (XmlElement sequence_node in item.GetElementsByTagName("MatchedKeyPoseSequences")[0])
+	            {
+		            KeyPoseSequence sequence = KeyPoseSequence.LoadXML(sequence_node);
+                    MatchedKeyPoseSequences[label].Add(sequence);
+	            }
+
+                
+                XmlNodeList keyPose_nodes = item.GetElementsByTagName("key-pose");
+                foreach (XmlElement keyPose in keyPose_nodes)
+                {
+                    KeyPoses[label].Add(KeyPose.LoadXML(keyPose));
+                }
+            }
         }
     }
 }

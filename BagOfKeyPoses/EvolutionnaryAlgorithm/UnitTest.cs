@@ -15,10 +15,15 @@ namespace EvolutionnaryAlgorithm
         {
             Console.Write("JointsRecombinationTest() : "+JointsRecombinationTest());
             Console.Write("NoFeaturesTest() : " + NoFeaturesTest());
-            
 
+            /*Random rand = new Random(666);
+
+            for (int i = 0; i < 3; i++)
+            {
+                Console.WriteLine(rand.Next());
+            }*/
+          
             Console.ReadKey();
-
         }
 
         //According to fig. 4 - http://www.sciencedirect.com/science/article/pii/S0957417413006210 

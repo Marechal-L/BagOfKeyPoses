@@ -35,11 +35,11 @@
 *       - LOAOR : leaveOneActorOutRandom            - Non Exhaustive (number of rounds)
 *       - TWOFOLDSQ : twoFoldOnSequences            - Exhaustive
 *       - TWOFOLD : twoFoldHalfActors               - Exhaustive
-*       - TWOFOLDS : twoFoldActorsTrainingSet       - Exhaustive
+*       - TWOFOLDSET : twoFoldActorsTrainingSet     - Exhaustive
 *       
 *      Take a look at the README for more informations. 
 */
-#define LOSOR
+#define TWOFOLDSET
 
 
 using System;
@@ -57,8 +57,14 @@ namespace SampleUsage
 {
     class SampleUsage_1
     {
+        public static int RandomSeed = 526;
+
         static void Main(string[] args)
         {
+            Dataset.RandomSeed = RandomSeed;
+            Shuffler.RandomSeed = RandomSeed;
+            Functions.RandomSeed = RandomSeed;
+
             // Run usage sample.
             datasetValidationSample();
 
@@ -78,6 +84,7 @@ namespace SampleUsage
             ResultSet result = null;
 
             //You can change here the save path for the result.
+            System.IO.Directory.CreateDirectory("logs");
             string filename = "logs/result_";
 
 
@@ -99,7 +106,7 @@ namespace SampleUsage
             filename += "LOAO";
 #endif
 #if LOAOR
-            result = ValidationTest.leaveOneActorOutRandom(dataset, learning_params);
+            result = ValidationTest.leaveOneActorOutRandom(dataset, learning_params,1);
             Console.Write("leaveOneActorOutRandom : ");
             filename += "LOAOR";
 #endif
@@ -114,7 +121,7 @@ namespace SampleUsage
             filename += "TWOFOLD";
 #endif
 #if TWOFOLDSET
-            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" });
+            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },1);
             Console.Write("twoFoldActorsTrainingSet : ");
             filename += "TWOFOLDSET";
 #endif

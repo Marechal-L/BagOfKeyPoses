@@ -56,11 +56,25 @@ namespace BagOfKeyPoses
             int frame = 0;
             foreach (var kp in Items)
             {                
-                sequenceNode.AppendChild(xml.ImportNode(kp.ToXML(frame, false).DocumentElement, true));
+                sequenceNode.AppendChild(xml.ImportNode(kp.ToXML(frame, true).DocumentElement, true));
                 frame++;
             }            
 
             return xml;
+        }
+
+        public static KeyPoseSequence LoadXML(XmlElement rootNode)
+        {
+            KeyPoseSequence kp_sequence = new KeyPoseSequence();
+
+            kp_sequence.ClassLabel = rootNode.Attributes["action-class"].Value;
+
+            foreach (XmlElement item in rootNode.GetElementsByTagName("key-pose"))
+	        {
+		        kp_sequence.Items.Add(KeyPose.LoadXML(item));
+	        }
+
+            return kp_sequence;
         }
     }
 }
