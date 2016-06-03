@@ -40,7 +40,7 @@ namespace EvolutionnaryAlgorithm
         static int MAX_GENERATION = 100;
 
 
-        //Entry point of the evolutionnary algorithm.
+        //Entry point of the evolutionary algorithm.
         static void Main(string[] args)
         {
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
