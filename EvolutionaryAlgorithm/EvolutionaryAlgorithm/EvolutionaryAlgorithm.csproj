@@ -47,6 +47,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Util">
+      <HintPath>..\..\..\..\Data\BagOfKeyPoses\BagOfKeyPoses_Library\Util\bin\Release\Util.dll</HintPath>
+    </Reference>
     <Reference Include="Validator">
       <HintPath>..\..\BagOfKeyPoses_Library\Validator\bin\Release\Validator.dll</HintPath>
     </Reference>
