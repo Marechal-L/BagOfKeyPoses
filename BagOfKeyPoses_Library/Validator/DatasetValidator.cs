@@ -21,7 +21,7 @@
  * SAVE
  * LOAD
  */
-//#define SAVE
+#define LOAD
 
 using System;
 using System.Xml;
@@ -29,6 +29,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using Util;
 using Parser;
 using BagOfKeyPoses;
@@ -215,7 +216,10 @@ namespace Validator
 
     public static class ValidationTest
     {
-        static int FILE_ID = 0;
+        public enum TRAINING_MODES{CLASSIC = 0, SAVE = 1, LOAD = 2};
+
+        private static int FILE_ID = 0;
+        public static TRAINING_MODES TRAINING = TRAINING_MODES.CLASSIC;
 
         /// <summary>
         /// Performs a 2-fold validation on the given dataset, chooses randomly a percentage for the train data.
@@ -417,6 +421,8 @@ namespace Validator
         /// </summary>
         private static ResultSet crossValidationResultSet(LearningParams learning_params, TrainDataType trainData, TrainDataType testData)
         {
+            
+
             //Cross Validation     
 
             //Create a new resultSet
@@ -429,27 +435,33 @@ namespace Validator
             string folderName = "Config";
             System.IO.Directory.CreateDirectory(folderName);
 
+            //Train the model and save the config
+            if(TRAINING == TRAINING_MODES.SAVE)
+            {
+                bokp.Train(trainData.Dictionary);
             
-#if SAVE
-            //Train the model
-            bokp.Train(trainData.Dictionary);
-            
-            //Save the train config into a file.
-            string folderName = "Config";
-            System.IO.Directory.CreateDirectory(folderName);
-            bokp.Config.ToXML().Save(folderName + "/TrainConfig_"+ FILE_ID +".xml");
-#elif LOAD
-             //Train the model by loading a config file
-            XmlDocument doc = new XmlDocument();
-            doc.Load(folderName + "/TrainConfig_" + FILE_ID + ".xml");
-            bokp.Config.LoadXML(doc);
-#else
-            //Train the model
-            bokp.Train(trainData.Dictionary);
-#endif
+                //Save the train config into a file.
+                folderName = "Config";
+                System.IO.Directory.CreateDirectory(folderName);
+                bokp.Config.ToXML().Save(folderName + "/TrainConfig_"+ FILE_ID +".xml");
+            }
+            //Train the model by loading a config file
+            else if(TRAINING == TRAINING_MODES.LOAD)
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.Load(folderName + "/TrainConfig_" + FILE_ID + ".xml");
+                bokp.Config.LoadXML(doc);
+            }
+            //Train the model only
+            else
+            {
+                bokp.Train(trainData.Dictionary);
+            }
 
             //Evaluate each sequence
-            Console.WriteLine("Testing...");
+            Console.WriteLine("Testing ...");
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
             foreach (string label in learning_params.ClassLabels)
             {
                 foreach (var sequence in testData[label])
@@ -457,9 +469,12 @@ namespace Validator
                     string recognition = bokp.EvaluateSequence(sequence);
 
                     //Add the test to the resultSet
-                    resultSet.addTest(label, recognition);                 
+                    resultSet.addTest(label, recognition);               
                 }
             }
+            stopWatch.Stop();
+            TimeSpan ts = stopWatch.Elapsed;
+            Console.WriteLine("Time Elapsed : " + ts);
 
 #if DEBUG
             Console.WriteLine(resultSet);

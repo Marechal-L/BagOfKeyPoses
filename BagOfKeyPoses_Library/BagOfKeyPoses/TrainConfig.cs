@@ -220,8 +220,6 @@ namespace BagOfKeyPoses
                 attribute.Value = label;
                 class_node.Attributes.Append(attribute);
                 
-
-
                 //  <SSE>
                 XmlNode element = doc.CreateElement("SSE");
                 attribute = doc.CreateAttribute("value");
@@ -265,6 +263,7 @@ namespace BagOfKeyPoses
 
         public void LoadXML(XmlDocument doc)
         {
+            KeyPoseDistanceCache = new AssociativeMatrix<KeyPose, KeyPose, double>();
             MatchedKeyPoseSequences = new Dictionary<string, List<KeyPoseSequence>>();
             SSE = new AssociativeArray<string, double>();
             KeyPoses = new Dictionary<string, List<KeyPose>>();
@@ -286,8 +285,8 @@ namespace BagOfKeyPoses
                     MatchedKeyPoseSequences[label].Add(sequence);
 	            }
 
-                
-                XmlNodeList keyPose_nodes = item.GetElementsByTagName("key-pose");
+
+                XmlNodeList keyPose_nodes = ((XmlElement)item.GetElementsByTagName("KeyPoses")[0]).GetElementsByTagName("key-pose");
                 foreach (XmlElement keyPose in keyPose_nodes)
                 {
                     KeyPoses[label].Add(KeyPose.LoadXML(keyPose));

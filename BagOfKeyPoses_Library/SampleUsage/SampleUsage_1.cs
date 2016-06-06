@@ -89,6 +89,8 @@ namespace SampleUsage
             string filename = "logs/result_";
 
 
+            ValidationTest.TRAINING = ValidationTest.TRAINING_MODES.LOAD;
+
             //Here are all tests already implemented, you can change which test is executed by changing the #define at the beginning of the file.
 
 #if LOSO
@@ -122,7 +124,7 @@ namespace SampleUsage
             filename += "TWOFOLD";
 #endif
 #if TWOFOLDSET
-            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },1);
+            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
             Console.Write("twoFoldActorsTrainingSet : ");
             filename += "TWOFOLDSET";
 #endif
