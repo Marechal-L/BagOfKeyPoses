@@ -258,9 +258,6 @@ namespace BagOfKeyPoses
             return doc;
         }
 
-        //MatchedKeyPoseSequences
-
-
         public void LoadXML(XmlDocument doc)
         {
             KeyPoseDistanceCache = new AssociativeMatrix<KeyPose, KeyPose, double>();

@@ -429,7 +429,7 @@ namespace Validator
             ResultSet resultSet = new ResultSet(learning_params.ClassLabels);
 
             //Create and train a new model
-            Console.WriteLine("Training...");
+            
             BoKP bokp = new BoKP(learning_params);
 
             string folderName = "Config";
@@ -438,6 +438,7 @@ namespace Validator
             //Train the model and save the config
             if(TRAINING == TRAINING_MODES.SAVE)
             {
+                Console.WriteLine("Training...");
                 bokp.Train(trainData.Dictionary);
             
                 //Save the train config into a file.
@@ -448,6 +449,7 @@ namespace Validator
             //Train the model by loading a config file
             else if(TRAINING == TRAINING_MODES.LOAD)
             {
+                Console.WriteLine("Reading training file ...");
                 XmlDocument doc = new XmlDocument();
                 doc.Load(folderName + "/TrainConfig_" + FILE_ID + ".xml");
                 bokp.Config.LoadXML(doc);
@@ -455,6 +457,7 @@ namespace Validator
             //Train the model only
             else
             {
+                Console.WriteLine("Training...");
                 bokp.Train(trainData.Dictionary);
             }
 

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using System.Threading.Tasks;
 using BagOfKeyPoses;
 using Parser;
@@ -54,6 +55,8 @@ namespace EvolutionnaryAlgorithm
 
             //Parameters of the evolutionnary algorithm
             Individual.NB_FEATURES = NB_FEATURES;
+            Individual.NB_LABELS = realDataset.Labels.Count();
+
             int populationSize = 10, offspringSize = 20;
             int generations_without_change = 0;
             Individual individual, equalIndividual;
@@ -138,6 +141,9 @@ namespace EvolutionnaryAlgorithm
             writer.Write(s);
             writer.Close();
 
+            System.IO.Directory.CreateDirectory("Individuals");
+            population.Generation[0].ToXML().Save("Individuals/BestIndividual.xml");
+
             Console.ReadKey();
         }
 
@@ -148,13 +154,17 @@ namespace EvolutionnaryAlgorithm
         public static bool evaluateFitness(Individual individual)
         {
             learning_params.FeatureSize = individual.getNbOfOnes() * DIM_FEATURES;
+            learning_params.SetK(individual.K);
             modifyDataset(individual);
 
             double old_f = individual.FitnessScore;
 
-            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
+            //ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
+            //double new_f = result.getAverage();
 
-            double new_f = result.getAverage();
+            double o = individual.K.Count(x => x > 5);
+
+            double new_f = individual.getNbOfOnes() * individual.K.Count(x => x > 5);
 
             if(new_f > old_f)
             {
@@ -311,7 +321,9 @@ namespace EvolutionnaryAlgorithm
     class Individual
     {
         public static int NB_FEATURES = 1;
+        public static int NB_LABELS = 1;
         public bool[] Genes;
+        public int[] K;
         public double FitnessScore = -1;
 
         /// <summary>
@@ -320,8 +332,14 @@ namespace EvolutionnaryAlgorithm
         public Individual()
         {
             Genes = new bool[NB_FEATURES];
+            K = new int[NB_LABELS];
 
-            int nbOfMutations = UsualFunctions.random.Next(NB_FEATURES);
+            for (int i = 0; i < NB_LABELS; i++)
+            {
+                K[i] = UsualFunctions.random.Next(1,11);
+            }
+
+            int nbOfMutations = UsualFunctions.random.Next(NB_FEATURES + NB_LABELS);
             for (int i = 0; i < nbOfMutations; i++)
             {
                 mutate();
@@ -331,6 +349,7 @@ namespace EvolutionnaryAlgorithm
         public Individual(Individual individual)
         {
             this.Genes = (bool[]) individual.Genes.Clone();
+            this.K = (int[])individual.K.Clone();
         }
 
         /// <summary>
@@ -355,6 +374,19 @@ namespace EvolutionnaryAlgorithm
                     Genes[feature] = !Genes[feature];
                 }
             }
+
+            for (int i = 0; i < NB_LABELS; i++)
+            {
+                double rand = UsualFunctions.random.NextDouble();
+
+                if (rand < 0.25)
+                    K[i] += 1;
+                if (rand > 0.75)
+                    K[i] -= 1;
+
+                if (K[i] <= 0)
+                    K[i] = 1;
+            }
         }
 
         public override string ToString()
@@ -364,8 +396,77 @@ namespace EvolutionnaryAlgorithm
             {
                 s += (val)?("1"):("0");
             }
+
+            s += " | ";
+
+            foreach (var val in K)
+            {
+                s += val + " ";
+            }
             
             return s;
+        }
+
+        public XmlDocument ToXML()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<individual></individual>");
+
+            //<FitnessScore>
+            XmlNode element = doc.CreateElement("FitnessScore");
+            XmlAttribute attribute = doc.CreateAttribute("value");
+            attribute.Value = ""+this.FitnessScore;
+
+            element.Attributes.Append(attribute);
+            doc.DocumentElement.AppendChild(doc.ImportNode(element, true));
+
+            //<K>
+            int i = 0;
+            string s_K = "";
+            foreach (var val in K)
+	        {
+                s_K += (i==0) ? ("") : (" ");
+		        s_K += ""+val;
+                i++;
+	        }
+
+            element = doc.CreateElement("K");
+            attribute = doc.CreateAttribute("value");
+            attribute.Value = s_K;
+
+            element.Attributes.Append(attribute);
+            doc.DocumentElement.AppendChild(doc.ImportNode(element, true));
+
+            //<Features>
+            i = 0;
+            string s_features = "";
+            foreach (var val in Genes)
+	        {
+                s_features += (i == 0) ? ("") : (" ");
+                s_features += (val) ? ("1") : ("0");
+                i++;
+	        }
+
+            element = doc.CreateElement("Features");
+            attribute = doc.CreateAttribute("value");
+            attribute.Value = s_features;
+
+            element.Attributes.Append(attribute);
+            doc.DocumentElement.AppendChild(doc.ImportNode(element, true));
+            
+            return doc;
+        }
+
+        public void LoadXML(XmlDocument doc)
+        {
+            this.FitnessScore = double.Parse(doc.GetElementsByTagName("FitnessScore")[0].Attributes["value"].Value);
+
+            string s_K = doc.GetElementsByTagName("K")[0].Attributes["value"].Value;
+            K = Array.ConvertAll(s_K.Split(' '), int.Parse);
+
+            string s_Genes = doc.GetElementsByTagName("Features")[0].Attributes["value"].Value;
+            s_Genes = s_Genes.Replace(" ", "");
+            Genes = s_Genes.Select(c => c == '1').ToArray();
         }
 
         /// <summary>
@@ -373,7 +474,7 @@ namespace EvolutionnaryAlgorithm
         /// </summary>
         public override bool Equals(Object o)
         {
-            if (ReferenceEquals(this, o))
+            if (o.GetType() == typeof(Individual))
             {
                 Individual ind = (Individual)o;
 
@@ -383,6 +484,14 @@ namespace EvolutionnaryAlgorithm
                 for (int i = 0; i < ind.Genes.Length; i++)
                 {
                     if (ind.Genes[i] != this.Genes[i])
+                    {
+                        return false;
+                    }
+                }
+
+                for (int i = 0; i < ind.K.Length; i++)
+                {
+                    if (ind.K[i] != this.K[i])
                     {
                         return false;
                     }

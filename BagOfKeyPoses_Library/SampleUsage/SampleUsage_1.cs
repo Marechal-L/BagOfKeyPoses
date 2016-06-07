@@ -39,7 +39,7 @@
 *       
 *      Take a look at the README for more informations. 
 */
-#define TWOFOLDSET
+#define LOAOR
 
 
 using System;
@@ -89,7 +89,7 @@ namespace SampleUsage
             string filename = "logs/result_";
 
 
-            ValidationTest.TRAINING = ValidationTest.TRAINING_MODES.LOAD;
+            ValidationTest.TRAINING = ValidationTest.TRAINING_MODES.SAVE;
 
             //Here are all tests already implemented, you can change which test is executed by changing the #define at the beginning of the file.
 
@@ -109,12 +109,12 @@ namespace SampleUsage
             filename += "LOAO";
 #endif
 #if LOAOR
-            result = ValidationTest.leaveOneActorOutRandom(dataset, learning_params,1);
+            result = ValidationTest.leaveOneActorOutRandom(dataset, learning_params,4);
             Console.Write("leaveOneActorOutRandom : ");
             filename += "LOAOR";
 #endif
 #if TWOFOLDSQ
-            result = ValidationTest.twoFoldOnSequences(dataset, learning_params, 50);
+            result = ValidationTest.twoFoldOnSequences(dataset, learning_params, 50, 2);
             Console.Write("twoFoldOnSequences : ");
             filename += "TWOFOLDSQ";
 #endif

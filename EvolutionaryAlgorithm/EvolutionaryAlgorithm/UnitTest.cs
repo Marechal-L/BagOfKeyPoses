@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 using Parser;
 using BagOfKeyPoses;
@@ -29,16 +30,10 @@ namespace EvolutionnaryAlgorithm
     {
         static void Main(string[] args)
         {
-            Console.Write("JointsRecombinationTest() : "+JointsRecombinationTest());
-            Console.Write("NoFeaturesTest() : " + NoFeaturesTest());
+            //Console.Write("JointsRecombinationTest() : "+JointsRecombinationTest());
+            //Console.Write("NoFeaturesTest() : " + NoFeaturesTest());
+            Console.Write("SaveAndLoadIndividual() : " + SaveAndLoadIndividual());
 
-            /*Random rand = new Random(23654);
-
-            for (int i = 0; i < 3; i++)
-            {
-                Console.WriteLine(rand.Next());
-            }*/
-          
             Console.ReadKey();
         }
 
@@ -90,6 +85,25 @@ namespace EvolutionnaryAlgorithm
             Program.evaluateFitness(ind);
 
             return true;
+        }
+
+        static Boolean SaveAndLoadIndividual()
+        {
+            Individual.NB_FEATURES = 15;
+            Individual.NB_LABELS = 4;
+
+            Individual indi1 = new Individual();
+            indi1.ToXML().Save("saveTest.xml");
+
+            Individual indi2 = new Individual();
+            XmlDocument doc = new XmlDocument();
+            doc.Load("saveTest.xml");
+            indi2.LoadXML(doc);
+
+            Console.WriteLine(indi1);
+            Console.WriteLine(indi2);
+
+            return indi1.Equals(indi2);
         }
     }
 }
