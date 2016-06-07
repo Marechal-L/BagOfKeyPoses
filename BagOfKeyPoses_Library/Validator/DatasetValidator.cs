@@ -421,8 +421,6 @@ namespace Validator
         /// </summary>
         private static ResultSet crossValidationResultSet(LearningParams learning_params, TrainDataType trainData, TrainDataType testData)
         {
-            
-
             //Cross Validation     
 
             //Create a new resultSet

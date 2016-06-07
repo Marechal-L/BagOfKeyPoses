@@ -37,8 +37,8 @@ namespace EvolutionnaryAlgorithm
 
         static int NB_FEATURES = 20;
         static int DIM_FEATURES = 3;                        //Dimension of each feature
-        static int MAX_GENERATION_WITHOUT_CHANGE = 50;
-        static int MAX_GENERATION = 100;
+        static int MAX_GENERATION_WITHOUT_CHANGE = 20;
+        static int MAX_GENERATION = 200;
 
 
         //Entry point of the evolutionary algorithm.
@@ -154,17 +154,16 @@ namespace EvolutionnaryAlgorithm
         public static bool evaluateFitness(Individual individual)
         {
             learning_params.FeatureSize = individual.getNbOfOnes() * DIM_FEATURES;
-            learning_params.SetK(individual.K);
+            //learning_params.SetK(individual.K);
             modifyDataset(individual);
 
             double old_f = individual.FitnessScore;
 
-            //ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
-            //double new_f = result.getAverage();
+            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
+            double new_f = result.getAverage();
 
-            double o = individual.K.Count(x => x > 5);
-
-            double new_f = individual.getNbOfOnes() * individual.K.Count(x => x > 5);
+            //double o = individual.K.Count(x => x > 5);
+            //double new_f = individual.getNbOfOnes() * individual.K.Count(x => x > 5);
 
             if(new_f > old_f)
             {
