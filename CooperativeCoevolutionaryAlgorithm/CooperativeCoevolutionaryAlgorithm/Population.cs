@@ -1,4 +1,6 @@
-﻿/*
+﻿#define PARALLEL
+
+/*
    Copyright (C) 2016 Ludovic Marechal and Francisco Flórez-Revuelta
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,10 +74,17 @@ namespace CooperativeCoevolutionaryAlgorithm
         /// </summary>
         public void evaluateFitness()
         {
+#if PARALLEL
             Parallel.For(0, PopulationSize, i =>
             {
                 Program.evaluateFitness(Generation[i]);
             });
+#else
+            for (int i = 0; i < PopulationSize; i++)
+            {
+                Program.evaluateFitness(Generation[i]);
+            }
+#endif
         }
 
         /// <summary>
@@ -172,6 +181,14 @@ namespace CooperativeCoevolutionaryAlgorithm
             string s = "" + FitnessScore + " : ";
 
             return s;
+        }
+
+        /// <summary>
+        /// Unused : Only defined to remove implementation warnings
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 
@@ -313,6 +330,14 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
             return false;
         }
+
+        /// <summary>
+        /// Unused : Only defined to remove implementation warnings
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     class IndividualParameters : Individual
@@ -444,6 +469,14 @@ namespace CooperativeCoevolutionaryAlgorithm
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Unused : Only defined to remove implementation warnings
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 
@@ -577,6 +610,14 @@ namespace CooperativeCoevolutionaryAlgorithm
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Unused : Only defined to remove implementation warnings
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

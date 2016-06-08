@@ -1,4 +1,6 @@
-﻿/*
+﻿#define PARALLEL
+
+/*
    Copyright (C) 2016 Ludovic Marechal and Francisco Flórez-Revuelta
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +16,7 @@
    limitations under the License.
 */
 
+using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,17 +47,12 @@ namespace CooperativeCoevolutionaryAlgorithm
         static void Main(string[] args)
         {
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
-
-            learning_params = new LearningParams();
-            learning_params.ClassLabels = realDataset.Labels;
-            learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
-            learning_params.InitialK = 8;
-
             realDataset.normaliseSkeletons();
 
             //Parameters of the evolutionary algorithm
             Individual.NB_FEATURES = NB_FEATURES;
             Individual.NB_LABELS = realDataset.Labels.Count();
+            Individual.NB_INSTANCES = realDataset.Data.Count();
 
             int populationSize = 10, offspringSize = 20;
             int generations_without_change = 0;
@@ -63,6 +61,9 @@ namespace CooperativeCoevolutionaryAlgorithm
             //Create initial population
             Population population = new Population(populationSize, offspringSize);
             population.createFirstGeneration(Population.IndividualType.FEATURES);
+
+            Population populationParameters = new Population(populationSize, offspringSize);
+            populationParameters.createFirstGeneration(Population.IndividualType.PARAMETERS);
 
             //Evalutate Fitness
             population.evaluateFitness();
@@ -77,33 +78,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             int generationNumber = 0;
             do
             {
-                //Sequential For
-                /*for (int crossover = 0; crossover < offspringSize; ++crossover)
-                {
-                    //Recombination
-                    UsualFunctions.Recombine(population, ref population.Generation[populationSize + crossover]);
-
-                    individual = population.Generation[populationSize + crossover];
-
-                    //Mutation of the new individual
-                    individual.mutate();
-
-                    equalIndividual = population.equal(individual);
-                    if (equalIndividual == null)
-                    {
-                        evaluateFitness(individual);
-                    }
-                    else
-                    {
-                        if (evaluateFitness(equalIndividual))
-                        {
-                            Console.WriteLine("************************* Individual " + equalIndividual + "************");
-                        }
-                    }
-                }*/
-
-                //Parallel For
-                
+#if PARALLEL
                 Parallel.For(0, offspringSize, crossover =>
                 {
                     //Recombination
@@ -127,9 +102,32 @@ namespace CooperativeCoevolutionaryAlgorithm
                         }
                     }
                 }); // Parallel.For
-                
+#else
+                //Sequential For
+                for (int crossover = 0; crossover < offspringSize; ++crossover)
+                {
+                    //Recombination
+                    UsualFunctions.Recombine(population, ref population.Generation[populationSize + crossover]);
 
+                    individual = population.Generation[populationSize + crossover];
 
+                    //Mutation of the new individual
+                    individual.mutate();
+
+                    equalIndividual = population.equal(individual);
+                    if (equalIndividual == null)
+                    {
+                        evaluateFitness(individual);
+                    }
+                    else
+                    {
+                        if (evaluateFitness(equalIndividual))
+                        {
+                            Console.WriteLine("************************* Individual " + equalIndividual + "************");
+                        }
+                    }
+                }
+#endif
                 //Ordering the all population according to the fitness
                 population.order(populationSize + offspringSize);
 
@@ -157,8 +155,6 @@ namespace CooperativeCoevolutionaryAlgorithm
                 generationNumber++;
             } while (generations_without_change < MAX_GENERATION_WITHOUT_CHANGE && generationNumber < MAX_GENERATION);
 
-
-
             //Writing of the results on the console and into a file
             string s = "Best Individual (gen. " + generationNumber + " ) : " + population.Generation[0] + "\n";
             s += "\nAll population : \n" + population;
@@ -183,26 +179,43 @@ namespace CooperativeCoevolutionaryAlgorithm
         /// <returns>Boolean representing if the score is better or not</returns> 
         public static bool evaluateFitness(Individual individual)
         {
+            Dataset modifiedDataset = null;
+            LearningParams learning_params = null;
+            learning_params = new LearningParams();
+            learning_params.ClassLabels = realDataset.Labels;
+            learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
+            learning_params.InitialK = 8;
+
             if (individual.GetType() == typeof(IndividualFeatures))
             {
-                Dataset modifiedDataset = null;
                 IndividualFeatures individual_features = (IndividualFeatures)individual;
 
                 learning_params.FeatureSize = individual_features.getNbOfOnes() * DIM_FEATURES;
                 modifyDataset(ref modifiedDataset, individual_features);
-
-                double old_f = individual.FitnessScore;
-
-                ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
-
-                double new_f = result.getAverage();
-               
-                if (new_f > old_f)
-                {
-                    individual.FitnessScore = new_f;
-                    return true;
-                }
             }
+            else if(individual.GetType() == typeof(IndividualParameters))
+            {
+                IndividualParameters individual_parameters = (IndividualParameters)individual;
+
+                learning_params.SetK(individual_parameters.K);
+            }
+            else if(individual.GetType() == typeof(IndividualInstances))
+            {
+                modifiedDataset
+            }
+
+            double old_f = individual.FitnessScore;
+
+            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 2);
+
+            double new_f = result.getAverage();
+
+            if (new_f > old_f)
+            {
+                individual.FitnessScore = new_f;
+                return true;
+            }
+
             return false;
         }
 
@@ -252,6 +265,11 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
 
             return seq;
+        }
+
+        public static void InitTrainAndTestData()
+        {
+
         }
 
         #endregion

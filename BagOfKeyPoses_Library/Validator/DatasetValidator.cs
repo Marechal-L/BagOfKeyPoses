@@ -452,7 +452,6 @@ namespace Validator
                 doc.Load(folderName + "/TrainConfig_" + FILE_ID + ".xml");
                 bokp.Config.LoadXML(doc);
             }
-
             //Train the model only
             else
             {
@@ -472,6 +471,7 @@ namespace Validator
                     resultSet.addTest(label, recognition);               
                 }
             }
+
 #if DEBUG
             Console.WriteLine(resultSet);
 
