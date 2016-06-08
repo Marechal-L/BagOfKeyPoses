@@ -24,15 +24,15 @@ using System.Xml;
 using Parser;
 using BagOfKeyPoses;
 
-namespace EvolutionnaryAlgorithm
+namespace EvolutionaryAlgorithm
 {
     class UnitTest
     {
         static void Main(string[] args)
         {
-            //Console.Write("JointsRecombinationTest() : "+JointsRecombinationTest());
-            //Console.Write("NoFeaturesTest() : " + NoFeaturesTest());
-            Console.Write("SaveAndLoadIndividual() : " + SaveAndLoadIndividual());
+            //Console.WriteLine("JointsRecombinationTest() : "+JointsRecombinationTest() + "\n");
+            //Console.WriteLine("NoFeaturesTest() : " + NoFeaturesTest() + "\n");
+            Console.WriteLine("SaveAndLoadIndividual() : " + SaveAndLoadIndividual() + "\n");
 
             Console.ReadKey();
         }
@@ -90,7 +90,6 @@ namespace EvolutionnaryAlgorithm
         static Boolean SaveAndLoadIndividual()
         {
             Individual.NB_FEATURES = 15;
-            Individual.NB_LABELS = 4;
 
             Individual indi1 = new Individual();
             indi1.ToXML().Save("saveTest.xml");

@@ -24,7 +24,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace EvolutionnaryAlgorithm
+namespace EvolutionaryAlgorithm
 {
     class UsualFunctions
     {

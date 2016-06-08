@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>EvolutionnaryAlgorithm.Program</StartupObject>
+    <StartupObject>EvolutionaryAlgorithm.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BagOfKeyPoses">
@@ -41,6 +41,7 @@
     <Reference Include="Parser">
       <HintPath>..\..\BagOfKeyPoses_Library\Parser\bin\Release\Parser.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -55,6 +56,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Population.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTest.cs" />
