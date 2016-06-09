@@ -29,11 +29,7 @@ namespace EvolutionaryAlgorithm
 {
     class Program
     {
-        public static LearningParams learning_params;
-
-
         public static Dataset realDataset;                 //Dataset generated from txt files.
-        public static Dataset modifiedDataset;             //Dataset without specified features.
 
         static int NB_FEATURES = 20;
         static int DIM_FEATURES = 3;                        //Dimension of each feature
@@ -45,12 +41,6 @@ namespace EvolutionaryAlgorithm
         static void Main(string[] args)
         {
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
-            
-            learning_params = new LearningParams();
-            learning_params.ClassLabels = realDataset.Labels;
-            learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
-            learning_params.InitialK = 8;
-
             realDataset.normaliseSkeletons();
 
             //Parameters of the evolutionary algorithm
@@ -151,8 +141,15 @@ namespace EvolutionaryAlgorithm
         /// <returns>Boolean representing if the score is better or not</returns> 
         public static bool evaluateFitness(Individual individual)
         {
+            Dataset modifiedDataset = null;
+
+            LearningParams learning_params = new LearningParams();
+            learning_params.ClassLabels = realDataset.Labels;
+            learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
+            learning_params.InitialK = 8;
             learning_params.FeatureSize = individual.getNbOfOnes() * DIM_FEATURES;
-            modifyDataset(individual);
+
+            modifyDataset(ref modifiedDataset, individual);
 
             double old_f = individual.FitnessScore;
 
@@ -171,7 +168,7 @@ namespace EvolutionaryAlgorithm
         /// <summary>
         /// Modifiy the dataset by removing disabled features according to the given individual.
         /// </summary>
-        public static void modifyDataset(Individual individual)
+        public static void modifyDataset(ref Dataset modifiedDataset, Individual individual)
         {
 			modifiedDataset = new Dataset(realDataset);
 			

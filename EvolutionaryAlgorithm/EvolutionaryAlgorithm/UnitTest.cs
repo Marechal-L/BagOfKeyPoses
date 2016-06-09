@@ -77,11 +77,6 @@ namespace EvolutionaryAlgorithm
 
             Program.realDataset = DatasetParser.loadDatasetSkeleton(Individual.NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
 
-            Program.learning_params = new LearningParams();
-            Program.learning_params.ClassLabels = Program.realDataset.Labels;
-            Program.learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
-            Program.learning_params.InitialK = 8;
-
             Program.evaluateFitness(ind);
 
             return true;
