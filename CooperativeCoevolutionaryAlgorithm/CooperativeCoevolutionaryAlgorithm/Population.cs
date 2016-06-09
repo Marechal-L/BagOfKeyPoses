@@ -1,6 +1,4 @@
-﻿#define PARALLEL
-
-/*
+﻿/*
    Copyright (C) 2016 Ludovic Marechal and Francisco Flórez-Revuelta
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +13,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
+#define PARALLEL
 
 using System;
 using System.Collections.Generic;
