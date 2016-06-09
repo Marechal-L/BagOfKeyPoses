@@ -31,10 +31,11 @@ namespace CooperativeCoevolutionaryAlgorithm
     /// </summary>
     class Population
     {
-        public enum IndividualType { PARAMETERS, FEATURES, INSTANCES };
+        public enum IndividualType { FEATURES = 0, PARAMETERS = 1, INSTANCES = 2 };
 
         public Individual[] Generation;
         public int PopulationSize, OffspringSize;
+        public IndividualType PopulationType;
 
         public Population(int populationSize, int offspringSize)
         {
@@ -44,6 +45,7 @@ namespace CooperativeCoevolutionaryAlgorithm
 
         public void createFirstGeneration(IndividualType type)
         {
+            PopulationType = type;
             Generation = new Individual[PopulationSize + OffspringSize];
             for (int i = 0; i < PopulationSize + OffspringSize; i++)
             {

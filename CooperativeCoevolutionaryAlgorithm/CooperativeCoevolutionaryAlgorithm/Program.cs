@@ -38,10 +38,12 @@ namespace CooperativeCoevolutionaryAlgorithm
 
         static int NB_FEATURES = 20;
         static int DIM_FEATURES = 3;                        //Dimension of each feature
-        static int MAX_GENERATION_WITHOUT_CHANGE = 20;
-        static int MAX_GENERATION = 100;
+        static int MAX_GENERATION_WITHOUT_CHANGE = 100;
+        static int MAX_GENERATION = 500;
 
+        private static readonly object lockEqualIndividual = new object();
 
+        static Population.IndividualType SelectedIndividualType = Population.IndividualType.FEATURES;
 
         //Entry point of the evolutionary algorithm.
         static void Main(string[] args)
@@ -54,95 +56,72 @@ namespace CooperativeCoevolutionaryAlgorithm
             Individual.NB_LABELS = realDataset.Labels.Count();
             Individual.NB_INSTANCES = realDataset.Data.Count();
 
-            int populationSize = 10, offspringSize = 20;
+            int populationSize = 10, offspringSize = 1;
             int generations_without_change = 0;
             Individual individual, equalIndividual;
 
             //Create initial populations
-            Population populationFeatures = new Population(populationSize, offspringSize);
-            populationFeatures.createFirstGeneration(Population.IndividualType.FEATURES);
 
-            Population populationParameters = new Population(populationSize, offspringSize);
-            populationParameters.createFirstGeneration(Population.IndividualType.PARAMETERS);
+            Population[] array_populations = new Population[3];
 
-            Population populationInstances = new Population(populationSize, offspringSize);
-            populationInstances.createFirstGeneration(Population.IndividualType.INSTANCES);
+            array_populations[0] = new Population(populationSize, offspringSize);
+            array_populations[0].createFirstGeneration(Population.IndividualType.FEATURES);
 
-            //Select the population to evolve.
-            Population population = populationInstances;
+            array_populations[1] = new Population(populationSize, offspringSize);
+            array_populations[1].createFirstGeneration(Population.IndividualType.PARAMETERS);
 
-            //Evalutate Fitness
-            population.evaluateFitness();
+            array_populations[2] = new Population(populationSize, offspringSize);
+            array_populations[2].createFirstGeneration(Population.IndividualType.INSTANCES);
 
-            //Order
-            population.order(populationSize);
-            Console.WriteLine(population);
+            //Evaluate the fitness of each individual of each population
+            foreach(Population pop in array_populations)
+            {
+                pop.evaluateFitness();
+                pop.order(populationSize);
+            }
 
-            double prev_best_fitness = population.Generation[0].FitnessScore;
+
+            double prev_best_fitness = -1;
+            double fitness_round = -1;
 
             //Main loop of the algorithm
             int generationNumber = 0;
             do
             {
-#if PARALLEL
-                Parallel.For(0, offspringSize, crossover =>
+                //Select the population to evolve
+                Population population = array_populations[UsualFunctions.random.Next(array_populations.Length)];
+                SelectedIndividualType = population.PopulationType;
+
+                //Create new individual
+                UsualFunctions.Recombine(population, ref population.Generation[populationSize + offspringSize - 1]);
+                Individual individual1 = population.Generation[populationSize + offspringSize - 1];
+                individual1.mutate();
+
+                //Select individuals from other populations
+                Population[] other_populations = array_populations.Where(x => x != population).ToArray();
+                Individual individual2 = other_populations[0].Generation[0];                                //Parameters or Features
+                Individual individual3 = other_populations[1].Generation[0];                                //Instances or Parameters
+
+                //evaluateFitness(Features, Parameters, Instances);
+                switch ((int)SelectedIndividualType)
                 {
-                    //Recombination
-                    UsualFunctions.Recombine(population, ref population.Generation[populationSize + crossover]);
-
-                    individual = population.Generation[populationSize + crossover];
-
-                    //Mutation of the new individual
-                    individual.mutate();
-
-                    equalIndividual = population.equal(individual);
-                    if (equalIndividual == null)
-                    {
-                        evaluateFitness(individual);
-                    }
-                    else
-                    {
-                        //Add lock
-                        if (evaluateFitness(equalIndividual))
-                        {
-                            Console.WriteLine("************************* Individual " + equalIndividual + "************");
-                        }
-                    }
-                }); // Parallel.For
-#else
-                //Sequential For
-                for (int crossover = 0; crossover < offspringSize; ++crossover)
-                {
-                    //Recombination
-                    UsualFunctions.Recombine(population, ref population.Generation[populationSize + crossover]);
-
-                    individual = population.Generation[populationSize + crossover];
-
-                    //Mutation of the new individual
-                    individual.mutate();
-
-                    equalIndividual = population.equal(individual);
-                    if (equalIndividual == null)
-                    {
-                        evaluateFitness(individual);
-                    }
-                    else
-                    {
-                        //Add lock
-                        if (evaluateFitness(equalIndividual))
-                        {
-                            Console.WriteLine("************************* Individual " + equalIndividual + "************");
-                        }
-                    }
+                    case 0: fitness_round = evaluateFitness((IndividualFeatures)individual1, (IndividualParameters)individual2, (IndividualInstances)individual3); break;
+                    case 1: fitness_round = evaluateFitness((IndividualFeatures)individual2, (IndividualParameters)individual1, (IndividualInstances)individual3); break;
+                    case 2: fitness_round = evaluateFitness((IndividualFeatures)individual2, (IndividualParameters)individual3, (IndividualInstances)individual1); break;
                 }
-#endif
+                Console.WriteLine(fitness_round);
+
+
                 //Ordering the all population according to the fitness
-                population.order(populationSize + offspringSize);
+                foreach (Population pop in array_populations)
+                {
+                    pop.order(populationSize + offspringSize);
+                }
 
                 //End loop verifications
-                if (prev_best_fitness != population.Generation[0].FitnessScore)
+                if (prev_best_fitness < fitness_round)
                 {
-                    prev_best_fitness = population.Generation[0].FitnessScore;
+                    prev_best_fitness = fitness_round;
                     generations_without_change = 0;
                 }
                 else
@@ -162,7 +141,8 @@ namespace CooperativeCoevolutionaryAlgorithm
 
                 generationNumber++;
             } while (generations_without_change < MAX_GENERATION_WITHOUT_CHANGE && generationNumber < MAX_GENERATION);
-
+            
+            /*
             //Writing of the results on the console and into a file
             string s = "Best Individual (gen. " + generationNumber + " ) : " + population.Generation[0] + "\n";
             s += "\nAll population : \n" + population;
@@ -177,7 +157,7 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             System.IO.Directory.CreateDirectory("Individuals");
             population.Generation[0].ToXML().Save("Individuals/BestIndividual.xml");
-
+            */
             Console.ReadKey();
         }
 
@@ -202,14 +182,14 @@ namespace CooperativeCoevolutionaryAlgorithm
                 learning_params.FeatureSize = individual_features.getNbOfOnes() * DIM_FEATURES;
                 modifyDataset(ref modifiedDataset, individual_features);
             }
-            else if(individual.GetType() == typeof(IndividualParameters))
+            else if (individual.GetType() == typeof(IndividualParameters))
             {
                 IndividualParameters individual_parameters = (IndividualParameters)individual;
 
                 learning_params.SetK(individual_parameters.K);
                 modifiedDataset = realDataset;
             }
-            else if(individual.GetType() == typeof(IndividualInstances))
+            else if (individual.GetType() == typeof(IndividualInstances))
             {
                 IndividualInstances individual_instances = (IndividualInstances)individual;
 
@@ -217,13 +197,12 @@ namespace CooperativeCoevolutionaryAlgorithm
                 InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
 
                 result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData);
-
             }
 
             double old_f = individual.FitnessScore;
 
-            if(individual.GetType() != typeof(IndividualInstances))
-                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 2);
+            if (individual.GetType() != typeof(IndividualInstances))
+                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 1);
 
             double new_f = result.getAverage();
 
@@ -234,6 +213,61 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Evaluate the fitness score of the coevolutionary algorithm by merging all individuals
+        /// </summary>
+        /// <returns>Boolean representing if the score is better or not</returns> 
+        public static double evaluateFitness(IndividualFeatures individual_features, IndividualParameters individual_parameters, IndividualInstances individual_instances)
+        {
+            ResultSet result = null;
+            Dataset modifiedDataset = null;
+            LearningParams learning_params = null;
+
+            learning_params = new LearningParams();
+            learning_params.ClassLabels = realDataset.Labels;
+            learning_params.Clustering = LearningParams.ClusteringType.Kmeans;
+            learning_params.InitialK = 8;
+
+            //individual_features
+            learning_params.FeatureSize = individual_features.getNbOfOnes() * DIM_FEATURES;
+            modifyDataset(ref modifiedDataset, individual_features);
+
+            //individual_parameters
+            learning_params.SetK(individual_parameters.K);
+
+            //individual_instances
+            DataType trainData, testData;
+            InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
+            result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData);
+
+            //evaluateFitness();
+            switch ((int)SelectedIndividualType)
+            {
+                case 0:  
+                        individual_features.FitnessScore = result.getAverage();
+                        if (individual_parameters.FitnessScore < individual_features.FitnessScore)
+                            individual_parameters.FitnessScore = individual_features.FitnessScore;
+                        if (individual_instances.FitnessScore < individual_features.FitnessScore)
+                            individual_instances.FitnessScore = individual_features.FitnessScore;
+                        break;
+                case 1:  
+                        individual_parameters.FitnessScore = result.getAverage();
+                        if (individual_features.FitnessScore < individual_parameters.FitnessScore)
+                            individual_features.FitnessScore = individual_parameters.FitnessScore;
+                        if (individual_instances.FitnessScore < individual_parameters.FitnessScore)
+                            individual_instances.FitnessScore = individual_parameters.FitnessScore;
+                        break;
+                case 2: 
+                        individual_instances.FitnessScore = result.getAverage();
+                        if (individual_features.FitnessScore < individual_instances.FitnessScore)
+                            individual_features.FitnessScore = individual_instances.FitnessScore;
+                        if (individual_parameters.FitnessScore < individual_instances.FitnessScore)
+                            individual_parameters.FitnessScore = individual_instances.FitnessScore;
+                        break;
+            }
+            return result.getAverage();
         }
 
         #region DATASET_MODIFICATIONS
