@@ -461,8 +461,6 @@ namespace Validator
 
             //Evaluate each sequence
             Console.WriteLine("Testing ...");
-            Stopwatch stopWatch = new Stopwatch();
-            stopWatch.Start();
             foreach (string label in learning_params.ClassLabels)
             {
                 foreach (var sequence in testData[label])
@@ -473,10 +471,6 @@ namespace Validator
                     resultSet.addTest(label, recognition);               
                 }
             }
-            stopWatch.Stop();
-            TimeSpan ts = stopWatch.Elapsed;
-            Console.WriteLine("Time Elapsed : " + ts);
-
 #if DEBUG
             Console.WriteLine(resultSet);
 
