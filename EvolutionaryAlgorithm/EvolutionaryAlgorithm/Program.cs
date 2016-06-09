@@ -38,6 +38,7 @@ namespace EvolutionaryAlgorithm
         static int MAX_GENERATION_WITHOUT_CHANGE = 20;
         static int MAX_GENERATION = 200;
 
+        private static readonly object lock_equalIndividual = new object();
 
         //Entry point of the evolutionary algorithm.
         static void Main(string[] args)
@@ -85,9 +86,13 @@ namespace EvolutionaryAlgorithm
                     }
                     else
                     {
-                        if (evaluateFitness(equalIndividual))
+                        Individual tmp = equalIndividual;
+                        lock (lock_equalIndividual)
                         {
-                            Console.WriteLine("************************* Individual " + equalIndividual + "************");
+                            if (evaluateFitness(tmp))
+                            {
+                                Console.WriteLine("************************* Individual " + tmp + "************");
+                            }
                         }
                     }
                 }); // Parallel.For
