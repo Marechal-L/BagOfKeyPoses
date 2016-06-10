@@ -58,7 +58,7 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             int populationSize = 10, offspringSize = 1;
             int generations_without_change = 0;
-            Individual individual, equalIndividual;
+            Individual best_features, best_parameters, best_instances;
 
             //Create initial populations
 
@@ -82,15 +82,17 @@ namespace CooperativeCoevolutionaryAlgorithm
 
 
             double prev_best_fitness = -1;
-            double fitness_round = -1;
+            double round_fitness = -1;
 
             //Main loop of the algorithm
             int generationNumber = 0;
             do
             {
                 //Select the population to evolve
-                Population population = array_populations[UsualFunctions.random.Next(array_populations.Length)];
+                Population population = selectPopulationAtRandom(array_populations,new double[]{2/6.0,2/6.0,2/6.0});
                 SelectedIndividualType = population.PopulationType;
+
+                Console.WriteLine("Selected Population : "+SelectedIndividualType);
 
                 //Create new individual
                 UsualFunctions.Recombine(population, ref population.Generation[populationSize + offspringSize - 1]);
@@ -99,17 +101,17 @@ namespace CooperativeCoevolutionaryAlgorithm
 
                 //Select individuals from other populations
                 Population[] other_populations = array_populations.Where(x => x != population).ToArray();
-                Individual individual2 = other_populations[0].Generation[0];                                //Parameters or Features
-                Individual individual3 = other_populations[1].Generation[0];                                //Instances or Parameters
-
+                Individual individual2 = UsualFunctions.RankSelection(other_populations[0]);                 //Parameters or Features
+                Individual individual3 = UsualFunctions.RankSelection(other_populations[1]);                 //Instances or Parameters
+                                                 
                 //evaluateFitness(Features, Parameters, Instances);
                 switch ((int)SelectedIndividualType)
                 {
-                    case 0: fitness_round = evaluateFitness((IndividualFeatures)individual1, (IndividualParameters)individual2, (IndividualInstances)individual3); break;
-                    case 1: fitness_round = evaluateFitness((IndividualFeatures)individual2, (IndividualParameters)individual1, (IndividualInstances)individual3); break;
-                    case 2: fitness_round = evaluateFitness((IndividualFeatures)individual2, (IndividualParameters)individual3, (IndividualInstances)individual1); break;
+                    case 0: round_fitness = evaluateFitness((IndividualFeatures)individual1, (IndividualParameters)individual2, (IndividualInstances)individual3); break;
+                    case 1: round_fitness = evaluateFitness((IndividualFeatures)individual2, (IndividualParameters)individual1, (IndividualInstances)individual3); break;
+                    case 2: round_fitness = evaluateFitness((IndividualFeatures)individual2, (IndividualParameters)individual3, (IndividualInstances)individual1); break;
                 }
-                Console.WriteLine(fitness_round);
+                Console.WriteLine(round_fitness);
 
 
                 //Ordering the all population according to the fitness
@@ -119,9 +121,17 @@ namespace CooperativeCoevolutionaryAlgorithm
                 }
 
                 //End loop verifications
-                if (prev_best_fitness < fitness_round)
+                if (prev_best_fitness < round_fitness)
                 {
-                    prev_best_fitness = fitness_round;
+                    Console.WriteLine("****************************** NEW BEST : " + round_fitness + " ******************************");
+                    
+                    switch ((int)SelectedIndividualType)
+                    {
+                        case 0: best_features = (IndividualFeatures)individual1; best_parameters = (IndividualParameters)individual2; best_instances = (IndividualInstances)individual3; break;
+                        case 1: best_features = (IndividualFeatures)individual2; best_parameters = (IndividualParameters)individual1; best_instances = (IndividualInstances)individual3; break;
+                        case 2: best_features = (IndividualFeatures)individual2; best_parameters = (IndividualParameters)individual3; best_instances = (IndividualInstances)individual1; break;
+                    }
+                    prev_best_fitness = round_fitness;
                     generations_without_change = 0;
                 }
                 else
@@ -141,7 +151,10 @@ namespace CooperativeCoevolutionaryAlgorithm
 
                 generationNumber++;
             } while (generations_without_change < MAX_GENERATION_WITHOUT_CHANGE && generationNumber < MAX_GENERATION);
-            
+
+            Console.WriteLine("END");
+                    
+
             /*
             //Writing of the results on the console and into a file
             string s = "Best Individual (gen. " + generationNumber + " ) : " + population.Generation[0] + "\n";
@@ -158,6 +171,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             System.IO.Directory.CreateDirectory("Individuals");
             population.Generation[0].ToXML().Save("Individuals/BestIndividual.xml");
             */
+
             Console.ReadKey();
         }
 
@@ -238,9 +252,16 @@ namespace CooperativeCoevolutionaryAlgorithm
             learning_params.SetK(individual_parameters.K);
 
             //individual_instances
-            DataType trainData, testData;
-            InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
-            result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData);
+            if(individual_instances != null)
+            { 
+                DataType trainData, testData;
+                InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
+                result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData);
+            }
+            else 
+            {
+                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 2);
+            }
 
             //evaluateFitness();
             switch ((int)SelectedIndividualType)
@@ -268,6 +289,29 @@ namespace CooperativeCoevolutionaryAlgorithm
                         break;
             }
             return result.getAverage();
+        }
+
+        public static Population selectPopulationAtRandom(Population[] array, double[] probabilities)
+        {
+            if(array.Length != probabilities.Length)
+            {
+                Console.WriteLine("Population and probabilities arrays should have the same size");
+                return null;
+            }
+
+            double diceRoll = UsualFunctions.random.NextDouble();
+            double cumulative = 0.0;
+            for (int i = 0; i < probabilities.Length; i++)
+            {
+                cumulative += probabilities[i];
+                if (diceRoll < cumulative)
+                {
+                    return array[i];
+                }
+            }
+
+            //This should never be reached
+            return null;
         }
 
         #region DATASET_MODIFICATIONS

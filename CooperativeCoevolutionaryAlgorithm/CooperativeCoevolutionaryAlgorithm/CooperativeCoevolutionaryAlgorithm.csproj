@@ -31,6 +31,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>CooperativeCoevolutionaryAlgorithm.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="BagOfKeyPoses">
       <HintPath>..\..\BagOfKeyPoses_Library\BagOfKeyPoses\bin\Release\BagOfKeyPoses.dll</HintPath>
@@ -56,6 +59,7 @@
     <Compile Include="Population.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnitTest.cs" />
     <Compile Include="UsualFunctions.cs" />
   </ItemGroup>
   <ItemGroup>
