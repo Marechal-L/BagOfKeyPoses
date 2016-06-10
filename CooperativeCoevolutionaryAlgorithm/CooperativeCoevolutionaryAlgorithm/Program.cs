@@ -58,11 +58,11 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             int populationSize = 10, offspringSize = 1;
             int generations_without_change = 0;
-            Individual best_features, best_parameters, best_instances;
+            Individual best_features = null, best_parameters = null, best_instances = null;
 
             //Create initial populations
 
-            Population[] array_populations = new Population[3];
+            Population[] array_populations = new Population[2];//new Population[3];
 
             array_populations[0] = new Population(populationSize, offspringSize);
             array_populations[0].createFirstGeneration(Population.IndividualType.FEATURES);
@@ -70,8 +70,8 @@ namespace CooperativeCoevolutionaryAlgorithm
             array_populations[1] = new Population(populationSize, offspringSize);
             array_populations[1].createFirstGeneration(Population.IndividualType.PARAMETERS);
 
-            array_populations[2] = new Population(populationSize, offspringSize);
-            array_populations[2].createFirstGeneration(Population.IndividualType.INSTANCES);
+            //array_populations[2] = new Population(populationSize, offspringSize);
+            //array_populations[2].createFirstGeneration(Population.IndividualType.INSTANCES);
 
             //Evaluate the fitness of each individual of each population
             foreach(Population pop in array_populations)
@@ -89,7 +89,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             do
             {
                 //Select the population to evolve
-                Population population = selectPopulationAtRandom(array_populations,new double[]{2/6.0,2/6.0,2/6.0});
+                Population population = selectPopulationAtRandom(array_populations,new double[]{3/6.0,3/6.0});
                 SelectedIndividualType = population.PopulationType;
 
                 Console.WriteLine("Selected Population : "+SelectedIndividualType);
@@ -101,8 +101,8 @@ namespace CooperativeCoevolutionaryAlgorithm
 
                 //Select individuals from other populations
                 Population[] other_populations = array_populations.Where(x => x != population).ToArray();
-                Individual individual2 = UsualFunctions.RankSelection(other_populations[0]);                 //Parameters or Features
-                Individual individual3 = UsualFunctions.RankSelection(other_populations[1]);                 //Instances or Parameters
+                Individual individual2 = UsualFunctions.RankSelection(other_populations[0]);                        //Parameters or Features
+                Individual individual3 = null;//UsualFunctions.RankSelection(other_populations[1]);                 //Instances or Parameters
                                                  
                 //evaluateFitness(Features, Parameters, Instances);
                 switch ((int)SelectedIndividualType)
@@ -151,27 +151,28 @@ namespace CooperativeCoevolutionaryAlgorithm
 
                 generationNumber++;
             } while (generations_without_change < MAX_GENERATION_WITHOUT_CHANGE && generationNumber < MAX_GENERATION);
-
+            
             Console.WriteLine("END");
-                    
+            Console.WriteLine("Best round : " + round_fitness);
 
-            /*
+            
             //Writing of the results on the console and into a file
-            string s = "Best Individual (gen. " + generationNumber + " ) : " + population.Generation[0] + "\n";
-            s += "\nAll population : \n" + population;
+            string s = "Best Generation (total. : " + generationNumber + " ) : " + round_fitness + "\n" + best_features + "\n" + best_parameters;
+        
             Console.WriteLine(s);
-
             string filename = "GeneticResult.log";
             System.IO.File.Create(filename).Close();
-
             System.IO.StreamWriter writer = new System.IO.StreamWriter(filename);
             writer.Write(s);
             writer.Close();
 
             System.IO.Directory.CreateDirectory("Individuals");
-            population.Generation[0].ToXML().Save("Individuals/BestIndividual.xml");
-            */
+            best_features.ToXML().Save("Individuals/BestRoundFeatures.xml");
+            best_parameters.ToXML().Save("Individuals/BestRoundParameters.xml");
 
+            array_populations[0].Generation[0].ToXML().Save("Individuals/BestIndividualFeatures.xml");
+            array_populations[1].Generation[0].ToXML().Save("Individuals/BestIndividualParameters.xml");
+            
             Console.ReadKey();
         }
 
@@ -270,15 +271,15 @@ namespace CooperativeCoevolutionaryAlgorithm
                         individual_features.FitnessScore = result.getAverage();
                         if (individual_parameters.FitnessScore < individual_features.FitnessScore)
                             individual_parameters.FitnessScore = individual_features.FitnessScore;
-                        if (individual_instances.FitnessScore < individual_features.FitnessScore)
-                            individual_instances.FitnessScore = individual_features.FitnessScore;
+                        /*if (individual_instances.FitnessScore < individual_features.FitnessScore)
+                            individual_instances.FitnessScore = individual_features.FitnessScore;*/
                         break;
                 case 1:  
                         individual_parameters.FitnessScore = result.getAverage();
                         if (individual_features.FitnessScore < individual_parameters.FitnessScore)
                             individual_features.FitnessScore = individual_parameters.FitnessScore;
-                        if (individual_instances.FitnessScore < individual_parameters.FitnessScore)
-                            individual_instances.FitnessScore = individual_parameters.FitnessScore;
+                        /*if (individual_instances.FitnessScore < individual_parameters.FitnessScore)
+                            individual_instances.FitnessScore = individual_parameters.FitnessScore;*/
                         break;
                 case 2: 
                         individual_instances.FitnessScore = result.getAverage();

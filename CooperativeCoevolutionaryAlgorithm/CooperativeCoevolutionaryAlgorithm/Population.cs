@@ -355,7 +355,7 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             for (int i = 0; i < NB_LABELS; i++)
             {
-                K[i] = UsualFunctions.random.Next(1, 11);
+                K[i] = UsualFunctions.random.Next(10, 12);
             }
         }
 
