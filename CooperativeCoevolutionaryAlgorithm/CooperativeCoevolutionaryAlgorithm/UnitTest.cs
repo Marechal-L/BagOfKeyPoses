@@ -10,7 +10,8 @@ namespace CooperativeCoevolutionaryAlgorithm
     {
         static void Main(string[] args)
         {
-            populationSelectionAtRandom();
+            //populationSelectionAtRandom();
+            gaussianTest();
 
             Console.ReadKey();
         }
@@ -43,6 +44,39 @@ namespace CooperativeCoevolutionaryAlgorithm
             Console.WriteLine("res1 : " + res1 / NbOfTests + "(" + prob1 + ")");
             Console.WriteLine("res2 : " + res2 / NbOfTests + "(" + prob2 + ")");
             Console.WriteLine("res3 : " + res3 / NbOfTests + "(" + prob3 + ")");
+        }
+
+        public static void gaussianTest()
+        {
+            int MIN_K = 5, MAX_K = 130;
+
+            int[] values = new int[130];
+
+            int mean = (MAX_K + MIN_K) / 2;
+            int deriv = (MAX_K - mean) / 4;
+
+            mean = 5;
+            deriv = 1;
+
+            Console.WriteLine("Mean : " + mean + "  Deriv : "+deriv);
+
+
+            double nbTests = 1000;
+            for (int i = 0; i < nbTests; i++)
+            {
+                int val = (int)UsualFunctions.nextGaussian(mean, deriv);
+
+                if(val >= 0)
+                    values[val] += 1;
+            }
+            
+
+
+            for (int i = 0; i < values.Length; i++)
+			{
+                if (values[i] != 0)
+                    Console.WriteLine(i+" : "+(values[i]/nbTests) * 100);
+			}
         }
 
     }

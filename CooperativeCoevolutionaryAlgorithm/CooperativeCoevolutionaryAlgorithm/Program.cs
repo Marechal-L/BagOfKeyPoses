@@ -58,7 +58,7 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             int populationSize = 10, offspringSize = 1;
             int generations_without_change = 0;
-            Individual best_features, best_parameters, best_instances;
+            Individual best_features = null, best_parameters = null, best_instances = null;
 
             //Create initial populations
 
@@ -153,24 +153,28 @@ namespace CooperativeCoevolutionaryAlgorithm
             } while (generations_without_change < MAX_GENERATION_WITHOUT_CHANGE && generationNumber < MAX_GENERATION);
 
             Console.WriteLine("END");
-                    
 
-            /*
+            Console.WriteLine("Best round : " + round_fitness);
+
             //Writing of the results on the console and into a file
-            string s = "Best Individual (gen. " + generationNumber + " ) : " + population.Generation[0] + "\n";
-            s += "\nAll population : \n" + population;
-            Console.WriteLine(s);
+            string s = "Best Generation (total. : " + generationNumber + " ) : " + round_fitness + "\n" + best_features + "\n" + best_parameters;
 
+            Console.WriteLine(s);
             string filename = "GeneticResult.log";
             System.IO.File.Create(filename).Close();
-
             System.IO.StreamWriter writer = new System.IO.StreamWriter(filename);
             writer.Write(s);
             writer.Close();
 
             System.IO.Directory.CreateDirectory("Individuals");
-            population.Generation[0].ToXML().Save("Individuals/BestIndividual.xml");
-            */
+            best_features.ToXML().Save("Individuals/BestRoundFeatures.xml");
+            best_parameters.ToXML().Save("Individuals/BestRoundParameters.xml");
+            best_instances.ToXML().Save("Individuals/BestRoundInstances.xml");
+
+            array_populations[0].Generation[0].ToXML().Save("Individuals/BestIndividualFeatures.xml");
+            array_populations[1].Generation[0].ToXML().Save("Individuals/BestIndividualParameters.xml");
+            array_populations[2].Generation[0].ToXML().Save("Individuals/BestIndividualInstances.xml");
+            
 
             Console.ReadKey();
         }

@@ -179,7 +179,19 @@ namespace CooperativeCoevolutionaryAlgorithm
                 throw new Exception("(UsualFunctions::RecombineJoints) Error occurred ( " + crossover_point + " is not a valid joint number ) : " + e.Message + " [" + e.InnerException + "]");
             }
         }
+
+        public static double nextGaussian(double mean, double standardDeviation)
+        {
+            double u1 = random.NextDouble(); //these are uniform(0,1) random doubles
+            double u2 = random.NextDouble();
+            double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
+            double randNormal = mean + standardDeviation * randStdNormal; //random normal(mean,stdDev^2)
+
+            return randNormal;
+        }
     }
+
+    
 
     /// <summary>
     ///  Represents a tree node used for the joints recombination process.
