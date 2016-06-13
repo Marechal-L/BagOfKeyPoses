@@ -344,6 +344,8 @@ namespace CooperativeCoevolutionaryAlgorithm
 
     class IndividualParameters : Individual
     {
+        public static int MIN_K = 5, MAX_K = 130;
+
         public int[] K;
 
         /// <summary>
@@ -355,7 +357,7 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             for (int i = 0; i < NB_LABELS; i++)
             {
-                K[i] = UsualFunctions.random.Next(10, 12);
+                K[i] = UsualFunctions.random.Next(MIN_K, MAX_K);
             }
         }
 
@@ -369,17 +371,32 @@ namespace CooperativeCoevolutionaryAlgorithm
         /// </summary>
         public override void mutate()
         {
-            for (int i = 0; i < NB_LABELS; i++)
+            double PROB_MUTATION = (double)UsualFunctions.random.NextDouble() * 3.0 / NB_LABELS;
+
+            if (UsualFunctions.random.NextDouble() < 0.5)
             {
-                double rand = UsualFunctions.random.NextDouble();
+                //Normal random value
+                int mean = (MAX_K + MIN_K) / 2;
+                int gaussianValue = (int)UsualFunctions.nextGaussian(mean, (MAX_K - mean) / 3);
+            }
+            else
+            {
+                //Random increase or decrease
+                for (int i = 0; i < NB_LABELS; i++)
+                {
+                    if (UsualFunctions.random.NextDouble() < PROB_MUTATION)
+                    {
+                        double rand = UsualFunctions.random.NextDouble();
 
-                if (rand < 0.25)
-                    K[i] += 1;
-                if (rand > 0.75)
-                    K[i] -= 1;
+                        if (rand < 0.25)
+                            K[i] += 1;
+                        if (rand > 0.75)
+                            K[i] -= 1;
 
-                if (K[i] <= 0)
-                    K[i] = 1;
+                        if (K[i] <= 0)
+                            K[i] = 1;
+                    }
+                }
             }
         }
 
