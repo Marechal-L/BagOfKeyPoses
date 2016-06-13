@@ -89,7 +89,8 @@ namespace SampleUsage
             string filename = "logs/result_";
 
 
-            ValidationTest.TRAINING = ValidationTest.TRAINING_MODES.SAVE;
+			//Uncomment if you want to save the training
+            //ValidationTest.TRAINING = ValidationTest.TRAINING_MODES.SAVE;
 
             //Here are all tests already implemented, you can change which test is executed by changing the #define at the beginning of the file.
 
