@@ -18,6 +18,7 @@
 
 using System.Diagnostics;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -51,17 +52,20 @@ namespace CooperativeCoevolutionaryAlgorithm
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             realDataset.normaliseSkeletons();
 
+            //You can change the output log file here.
+            StreamWriter logFile = File.AppendText("logFile.log");
+
             //Parameters of the evolutionary algorithm
             Individual.NB_FEATURES = NB_FEATURES;
             Individual.NB_LABELS = realDataset.Labels.Count();
             Individual.NB_INSTANCES = realDataset.Data.Count();
 
-            int populationSize = 10, offspringSize = 1;
+            int populationSize = 3, offspringSize = 1;
             int generations_without_change = 0;
             Individual best_features = null, best_parameters = null, best_instances = null;
 
+    #region Initialisation
             //Create initial populations
-
             Population[] array_populations = new Population[3];
 
             array_populations[0] = new Population(populationSize, offspringSize);
@@ -72,14 +76,14 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             array_populations[2] = new Population(populationSize, offspringSize);
             array_populations[2].createFirstGeneration(Population.IndividualType.INSTANCES);
+    #endregion
 
             //Evaluate the fitness of each individual of each population
-            foreach(Population pop in array_populations)
+            foreach (Population pop in array_populations)
             {
                 pop.evaluateFitness();
                 pop.order(populationSize);
             }
-
 
             double prev_best_fitness = -1;
             double round_fitness = -1;
@@ -133,6 +137,8 @@ namespace CooperativeCoevolutionaryAlgorithm
                     }
                     prev_best_fitness = round_fitness;
                     generations_without_change = 0;
+
+                    addRoundToLog(logFile, generationNumber, (IndividualFeatures)best_features, (IndividualParameters)best_parameters, (IndividualInstances)best_instances);
                 }
                 else
                 {
@@ -149,6 +155,8 @@ namespace CooperativeCoevolutionaryAlgorithm
                 Console.WriteLine("Generation : " + generationNumber);
                 Console.WriteLine();
 
+                
+
                 generationNumber++;
             } while (generations_without_change < MAX_GENERATION_WITHOUT_CHANGE && generationNumber < MAX_GENERATION);
 
@@ -157,7 +165,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             Console.WriteLine("Best round : " + round_fitness);
 
             //Writing of the results on the console and into a file
-            string s = "Best Generation (total. : " + generationNumber + " ) : " + round_fitness + "\n" + best_features + "\n" + best_parameters;
+            string s = "Best Generation (total. : " + generationNumber + " ) : " + round_fitness + "\r\n" + best_features + "\r\n" + best_parameters + "\r\n" + best_instances + "\r\n" + best_features.result;
 
             Console.WriteLine(s);
             string filename = "GeneticResult.log";
@@ -267,32 +275,65 @@ namespace CooperativeCoevolutionaryAlgorithm
                 result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 2);
             }
 
-            //evaluateFitness();
+            //Save the result into the individuals.
             switch ((int)SelectedIndividualType)
             {
                 case 0:  
-                        individual_features.FitnessScore = result.getAverage();
-                        if (individual_parameters.FitnessScore < individual_features.FitnessScore)
+                        individual_features.FitnessScore = result.getAverage(); 
+                        individual_features.result = result;
+                        if (individual_parameters.FitnessScore <= individual_features.FitnessScore)
+                        { 
                             individual_parameters.FitnessScore = individual_features.FitnessScore;
-                        if (individual_instances.FitnessScore < individual_features.FitnessScore)
+                            individual_parameters.result = result;
+                        }
+                        if (individual_instances.FitnessScore <= individual_features.FitnessScore)
+                        { 
                             individual_instances.FitnessScore = individual_features.FitnessScore;
+                            individual_instances.result = result;
+                        }
                         break;
                 case 1:  
                         individual_parameters.FitnessScore = result.getAverage();
-                        if (individual_features.FitnessScore < individual_parameters.FitnessScore)
+                        individual_parameters.result = result;
+                        if (individual_features.FitnessScore <= individual_parameters.FitnessScore)
+                        {
                             individual_features.FitnessScore = individual_parameters.FitnessScore;
-                        if (individual_instances.FitnessScore < individual_parameters.FitnessScore)
+                            individual_features.result = result;
+                        }
+                        if (individual_instances.FitnessScore <= individual_parameters.FitnessScore)
+                        { 
                             individual_instances.FitnessScore = individual_parameters.FitnessScore;
+                            individual_instances.result = result;
+                        }
                         break;
                 case 2: 
                         individual_instances.FitnessScore = result.getAverage();
-                        if (individual_features.FitnessScore < individual_instances.FitnessScore)
+                        individual_instances.result = result;
+                        if (individual_features.FitnessScore <= individual_instances.FitnessScore)
+                        { 
                             individual_features.FitnessScore = individual_instances.FitnessScore;
-                        if (individual_parameters.FitnessScore < individual_instances.FitnessScore)
+                            individual_features.result = result;
+                        }
+                        if (individual_parameters.FitnessScore <= individual_instances.FitnessScore)
+                        {
                             individual_parameters.FitnessScore = individual_instances.FitnessScore;
+                            individual_parameters.result = result;
+                        }
                         break;
             }
             return result.getAverage();
+        }
+
+        public static void addRoundToLog(TextWriter logFile, int numRound, IndividualFeatures best_features, IndividualParameters best_parameters, IndividualInstances best_instances)
+        {
+            logFile.WriteLine("Round : " + numRound);
+            logFile.WriteLine(best_features);
+            logFile.WriteLine(best_parameters);
+            logFile.WriteLine(best_instances);
+            logFile.WriteLine(best_features.result);
+            logFile.WriteLine("-------------------------------");
+
+            logFile.Flush();
         }
 
         public static Population selectPopulationAtRandom(Population[] array, double[] probabilities)

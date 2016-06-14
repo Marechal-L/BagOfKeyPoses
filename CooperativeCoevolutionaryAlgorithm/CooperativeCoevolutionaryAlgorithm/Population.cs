@@ -21,8 +21,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using System.Xml;
+using Validator;
 
 namespace CooperativeCoevolutionaryAlgorithm
 {
@@ -143,6 +143,7 @@ namespace CooperativeCoevolutionaryAlgorithm
         public static int NB_INSTANCES = 1;
 
         public double FitnessScore = -1;
+        public ResultSet result;
 
         /// <summary>
         /// Create an individual as random as possible by applying several mutations.
@@ -517,10 +518,12 @@ namespace CooperativeCoevolutionaryAlgorithm
         {
             Instances = new bool[NB_INSTANCES];
 
-            int nbOfMutations = UsualFunctions.random.Next(NB_FEATURES + NB_LABELS);
-            for (int i = 0; i < nbOfMutations; i++)
+            //At least 25% of ones
+            double PROB_ONES = 0.25 + (double)UsualFunctions.random.NextDouble() * 0.75;
+
+            for (int i = 0; i < Instances.Length; i++)
             {
-                mutate();
+                Instances[i] = ((double)UsualFunctions.random.NextDouble() < PROB_ONES);
             }
         }
 
