@@ -419,7 +419,7 @@ namespace Validator
         /// Core function of the cross validation.
         /// Trains the model with the given train data and tests it with the test data.
         /// </summary>
-        private static ResultSet crossValidationResultSet(LearningParams learning_params, TrainDataType trainData, TrainDataType testData)
+        public static ResultSet crossValidationResultSet(LearningParams learning_params, TrainDataType trainData, TrainDataType testData)
         {
             //Cross Validation     
 
@@ -471,6 +471,10 @@ namespace Validator
                     resultSet.addTest(label, recognition);               
                 }
             }
+<<<<<<< HEAD
+=======
+
+>>>>>>> cooperative
 #if DEBUG
             Console.WriteLine(resultSet);
 

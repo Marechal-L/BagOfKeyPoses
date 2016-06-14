@@ -56,7 +56,7 @@ namespace EvolutionaryAlgorithm
 
             //Parameters of the evolutionary algorithm
             Individual.NB_FEATURES = NB_FEATURES;
-            int populationSize = 3, offspringSize = 1;
+            int populationSize = 10, offspringSize = 20;
             int generations_without_change = 0;
             Individual individual, equalIndividual;
 
@@ -188,8 +188,7 @@ namespace EvolutionaryAlgorithm
         /// <returns>Boolean representing if the score is better or not</returns> 
         public static bool evaluateFitness(Individual individual)
         {
-
-    #region Learning_Params
+	#region Learning_Params
             Dataset modifiedDataset = null;
             LearningParams learning_params = new LearningParams();
             learning_params.ClassLabels = realDataset.Labels;
