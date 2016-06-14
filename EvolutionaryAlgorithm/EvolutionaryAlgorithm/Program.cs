@@ -49,9 +49,12 @@ namespace EvolutionaryAlgorithm
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             realDataset.normaliseSkeletons();
 
+            //You can change the output log file here.
+            StreamWriter logFile = File.AppendText("logFile.log");
+
             //Parameters of the evolutionary algorithm
             Individual.NB_FEATURES = NB_FEATURES;
-            int populationSize = 10, offspringSize = 20;
+            int populationSize = 3, offspringSize = 1;
             int generations_without_change = 0;
             Individual individual, equalIndividual;
 
@@ -133,6 +136,7 @@ namespace EvolutionaryAlgorithm
                 {
                     prev_best_fitness = population.Generation[0].FitnessScore;
                     generations_without_change = 0;
+                    addRoundToLog(logFile, generationNumber, population.Generation[0]);
                 }
                 else
                 {
@@ -195,16 +199,28 @@ namespace EvolutionaryAlgorithm
             double old_f = individual.FitnessScore;
 
             //You can change the validation method here
-            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
+            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },1);
 
             double new_f = result.getAverage();
 
             if(new_f > old_f)
             {
                 individual.FitnessScore = new_f;
+                individual.result = result;
                 return true;
             }
             return false;
+        }
+
+        public static void addRoundToLog(TextWriter logFile, int numRound, Individual bestIndividual )
+        {
+            logFile.WriteLine("Round : " + numRound);
+            logFile.WriteLine(bestIndividual);
+            logFile.WriteLine();
+            logFile.WriteLine(bestIndividual.result);
+            logFile.WriteLine("-------------------------------");
+
+            logFile.Flush();
         }
 
     #region DATASET_MODIFICATIONS

@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Validator;
 
 namespace EvolutionaryAlgorithm
 {
@@ -134,6 +135,7 @@ namespace EvolutionaryAlgorithm
         public static int NB_FEATURES = 1;
         public bool[] Genes;
         public double FitnessScore = -1;
+        public ResultSet result;
 
         /// <summary>
         /// Create an individual as random as possible by applying several mutations.
