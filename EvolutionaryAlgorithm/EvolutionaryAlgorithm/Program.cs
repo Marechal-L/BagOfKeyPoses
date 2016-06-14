@@ -39,18 +39,20 @@ namespace EvolutionaryAlgorithm
         static int MAX_GENERATION_WITHOUT_CHANGE = 20;
         static int MAX_GENERATION = 200;
 
+        //You can change the output log file here.
+        static string LogFilename = "logFile.log";
+
         private static readonly object lock_equalIndividual = new object();
 
         //Entry point of the evolutionary algorithm.
         static void Main(string[] args)
         {
+            File.Create(LogFilename).Close();
+
             //Choose the dataset to load.
             //You can implement your own parser. If you already did it, make sure to compile the BagOfKeYPoses_Library solution in release mode to generate the new .dll file.
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             realDataset.normaliseSkeletons();
-
-            //You can change the output log file here.
-            StreamWriter logFile = File.AppendText("logFile.log");
 
             //Parameters of the evolutionary algorithm
             Individual.NB_FEATURES = NB_FEATURES;
@@ -97,7 +99,7 @@ namespace EvolutionaryAlgorithm
                         {
                             if (evaluateFitness(tmp))
                             {
-                                Console.WriteLine("************************* Individual " + tmp + "************");
+                                Console.WriteLine("*** Individual " + tmp + "***");
                             }
                         }
                     }
@@ -132,11 +134,13 @@ namespace EvolutionaryAlgorithm
                 population.order(populationSize + offspringSize);
 
                 //End loop verifications
-                if (prev_best_fitness != population.Generation[0].FitnessScore)
+                if (prev_best_fitness < population.Generation[0].FitnessScore)
                 {
+                   
                     prev_best_fitness = population.Generation[0].FitnessScore;
                     generations_without_change = 0;
-                    addRoundToLog(logFile, generationNumber, population.Generation[0]);
+                    Console.WriteLine("******* NEW BEST : " + prev_best_fitness + "*******");
+                    addRoundToLog(generationNumber, population.Generation[0]);
                 }
                 else
                 {
@@ -212,15 +216,17 @@ namespace EvolutionaryAlgorithm
             return false;
         }
 
-        public static void addRoundToLog(TextWriter logFile, int numRound, Individual bestIndividual )
+        public static void addRoundToLog(int numRound, Individual bestIndividual)
         {
+            StreamWriter logFile = File.AppendText(LogFilename);
+
             logFile.WriteLine("Round : " + numRound);
             logFile.WriteLine(bestIndividual);
             logFile.WriteLine();
             logFile.WriteLine(bestIndividual.result);
             logFile.WriteLine("-------------------------------");
 
-            logFile.Flush();
+            logFile.Close();
         }
 
     #region DATASET_MODIFICATIONS
