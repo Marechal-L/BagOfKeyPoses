@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using System.IO;
 using System.Threading.Tasks;
 using BagOfKeyPoses;
 using Parser;
@@ -43,6 +44,8 @@ namespace EvolutionaryAlgorithm
         //Entry point of the evolutionary algorithm.
         static void Main(string[] args)
         {
+            //Choose the dataset to load.
+            //You can implement your own parser. If you already did it, make sure to compile the BagOfKeYPoses_Library solution in release mode to generate the new .dll file.
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             realDataset.normaliseSkeletons();
 
@@ -52,6 +55,7 @@ namespace EvolutionaryAlgorithm
             int generations_without_change = 0;
             Individual individual, equalIndividual;
 
+    #region Evolutionary_Algorithm
             //Create initial population
             Population population = new Population(populationSize, offspringSize, NB_FEATURES);
             
@@ -73,7 +77,6 @@ namespace EvolutionaryAlgorithm
                 {
                     //Recombination
                     UsualFunctions.Recombine(population, ref population.Generation[populationSize + crossover]);
-
                     individual = population.Generation[populationSize + crossover];
 
                     //Mutation of the new individual
@@ -102,7 +105,6 @@ namespace EvolutionaryAlgorithm
                 {
                     //Recombination
                     UsualFunctions.Recombine(population, ref population.Generation[populationSize + crossover]);
-
                     individual = population.Generation[populationSize + crossover];
 
                     //Mutation of the new individual
@@ -150,8 +152,9 @@ namespace EvolutionaryAlgorithm
                 generationNumber++;
             } while (generations_without_change < MAX_GENERATION_WITHOUT_CHANGE && generationNumber < MAX_GENERATION);
 
+    #endregion 
 
-
+    #region Writing_Results
             //Writing of the results on the console and into a file
             string s = "Best Individual (gen. " + generationNumber + " ) : " + population.Generation[0] + "\n";
             s += "\nAll population : \n" + population;
@@ -166,6 +169,7 @@ namespace EvolutionaryAlgorithm
 
             System.IO.Directory.CreateDirectory("Individuals");
             population.Generation[0].ToXML().Save("Individuals/BestIndividual.xml");
+    #endregion
 
             Console.ReadKey();
         }
@@ -176,6 +180,8 @@ namespace EvolutionaryAlgorithm
         /// <returns>Boolean representing if the score is better or not</returns> 
         public static bool evaluateFitness(Individual individual)
         {
+
+    #region Learning_Params
             Dataset modifiedDataset = null;
             LearningParams learning_params = new LearningParams();
             learning_params.ClassLabels = realDataset.Labels;
@@ -184,9 +190,11 @@ namespace EvolutionaryAlgorithm
             learning_params.FeatureSize = individual.getNbOfOnes() * DIM_FEATURES;
 
             modifyDataset(ref modifiedDataset, individual);
+    #endregion
 
             double old_f = individual.FitnessScore;
 
+            //You can change the validation method here
             ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
 
             double new_f = result.getAverage();
@@ -199,7 +207,7 @@ namespace EvolutionaryAlgorithm
             return false;
         }
 
-        #region DATASET_MODIFICATIONS
+    #region DATASET_MODIFICATIONS
 
         /// <summary>
         /// Modifiy the dataset by removing disabled features according to the given individual.
@@ -247,6 +255,6 @@ namespace EvolutionaryAlgorithm
             return seq;
         }
 
-        #endregion
+    #endregion
     }
 }
