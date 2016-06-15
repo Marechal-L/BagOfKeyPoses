@@ -23,6 +23,7 @@ using System.Text;
 using System.Xml;
 using System.IO;
 using System.Threading.Tasks;
+using System.Threading;
 using BagOfKeyPoses;
 using Parser;
 using Validator;
@@ -36,8 +37,8 @@ namespace EvolutionaryAlgorithm
 
         static int NB_FEATURES = 20;
         static int DIM_FEATURES = 3;                        //Dimension of each feature
-        static int MAX_GENERATION_WITHOUT_CHANGE = 20;
-        static int MAX_GENERATION = 200;
+        static int MAX_GENERATION_WITHOUT_CHANGE = 100;
+        static int MAX_GENERATION = 500;
 
         //You can change the output log file here.
         static string LogFilename = "logFile.log";
@@ -70,14 +71,18 @@ namespace EvolutionaryAlgorithm
 
             //Order
             population.order(populationSize);
+
+            Console.WriteLine("First Generation : ");
             Console.WriteLine(population);
 
             double prev_best_fitness = population.Generation[0].FitnessScore;
 
             //Main loop of the algorithm
             int generationNumber=0;
+            int progressMax = offspringSize;
             do{
-
+                int progressCount = 0;
+                Console.WriteLine("------------------------------- \r\nRound : "+generationNumber);
 #if PARALLEL
                 Parallel.For(0, offspringSize, crossover =>
                 {
@@ -100,10 +105,14 @@ namespace EvolutionaryAlgorithm
                         {
                             if (evaluateFitness(tmp))
                             {
-                                Console.WriteLine("*** Individual " + tmp + "***");
+                                Console.WriteLine("\n*** Individual " + tmp + "***");
                             }
                         }
                     }
+
+                    Interlocked.Increment(ref progressCount);
+                    Console.Write("\r" + progressCount + "/" + progressMax);
+
                 }); // Parallel.For
 #else
                 //Sequential For
@@ -125,9 +134,12 @@ namespace EvolutionaryAlgorithm
                     {
                         if (evaluateFitness(equalIndividual))
                         {
-                            Console.WriteLine("************************* Individual " + equalIndividual + "************");
+                            Console.WriteLine("\n*** Individual " + equalIndividual + "***");
                         }
                     }
+
+                    progressCount++;
+                    Console.Write("\r" + progressCount + "/" + progressMax);
                 }
 #endif
 
@@ -140,7 +152,7 @@ namespace EvolutionaryAlgorithm
                    
                     prev_best_fitness = population.Generation[0].FitnessScore;
                     generations_without_change = 0;
-                    Console.WriteLine("******* NEW BEST : " + prev_best_fitness + "*******");
+                    Console.WriteLine("\n******* NEW BEST : " + prev_best_fitness + "*******");
                     addRoundToLog(generationNumber, population.Generation[0]);
                 }
                 else
@@ -155,7 +167,6 @@ namespace EvolutionaryAlgorithm
 
                 Console.WriteLine();
                 Console.WriteLine("generations_without_change : "+generations_without_change);
-                Console.WriteLine("Generation : " + generationNumber);
                 Console.WriteLine();
 
                 generationNumber++;
@@ -203,7 +214,7 @@ namespace EvolutionaryAlgorithm
             double old_f = individual.FitnessScore;
 
             //You can change the validation method here
-            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },1);
+            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },1, false);
 
             double new_f = result.getAverage();
 

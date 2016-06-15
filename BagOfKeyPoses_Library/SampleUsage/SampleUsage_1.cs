@@ -110,7 +110,7 @@ namespace SampleUsage
             filename += "LOAO";
 #endif
 #if LOAOR
-            result = ValidationTest.leaveOneActorOutRandom(dataset, learning_params, 4, false);
+            result = ValidationTest.leaveOneActorOutRandom(dataset, learning_params, 4);
             Console.Write("leaveOneActorOutRandom : ");
             filename += "LOAOR";
 #endif
