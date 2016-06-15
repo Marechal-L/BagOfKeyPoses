@@ -50,7 +50,8 @@ namespace EvolutionaryAlgorithm
             File.Create(LogFilename).Close();
 
             //Choose the dataset to load.
-            //You can implement your own parser. If you already did it, make sure to compile the BagOfKeYPoses_Library solution in release mode to generate the new .dll file.
+            //You can implement your own parser. If you already did it, 
+            //make sure to compile the BagOfKeYPoses_Library solution in release mode first to generate the new .dll file.
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             realDataset.normaliseSkeletons();
 
@@ -60,7 +61,7 @@ namespace EvolutionaryAlgorithm
             int generations_without_change = 0;
             Individual individual, equalIndividual;
 
-    #region Evolutionary_Algorithm
+    #region Evolutionary_Algorithm_Loop
             //Create initial population
             Population population = new Population(populationSize, offspringSize, NB_FEATURES);
             

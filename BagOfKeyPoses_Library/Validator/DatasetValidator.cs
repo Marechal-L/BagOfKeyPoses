@@ -224,9 +224,10 @@ namespace Validator
         /// <summary>
         /// Performs a 2-fold validation on the given dataset, chooses randomly a percentage for the train data.
         /// </summary>
-        public static ResultSet twoFoldOnSequences(Dataset dataset, LearningParams learning_params,int percentageOfTrainData, int nbOfRounds = 10)
+        public static ResultSet twoFoldOnSequences(Dataset dataset, LearningParams learning_params, int percentageOfTrainData, int nbOfRounds = 10, bool verbose = true)
         {
-            Console.WriteLine("Cross Validation twoFoldOnSequences");
+            if (!verbose)
+                Console.WriteLine("Cross Validation twoFoldOnSequences");
 
             ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
@@ -234,15 +235,18 @@ namespace Validator
             nbOfRounds = (nbOfRounds <= 0) ? 1 : nbOfRounds;
             for (int i = 0; i < nbOfRounds; i++)
             {
-                Console.WriteLine("Data extraction...");
+                if (!verbose)
+                    Console.WriteLine("Data extraction...");
                 dataset.initTrainAndTestData(percentageOfTrainData, out trainData, out testData);
 
-                tmp = crossValidationResultSet(learning_params, trainData, testData);
-                Console.WriteLine("Average : " + tmp.getAverage());
+                tmp = crossValidationResultSet(learning_params, trainData, testData, verbose);
+                if (!verbose)
+                    Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
 
-                tmp = crossValidationResultSet(learning_params, testData, trainData);
-                Console.WriteLine("Average : " + tmp.getAverage());
+                tmp = crossValidationResultSet(learning_params, testData, trainData, verbose);
+                if (!verbose)
+                    Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
             }
 
@@ -253,9 +257,10 @@ namespace Validator
         /// Performs a leave-One-Actor-Out Random (LOAOR) cross validation on the given dataset.
         /// Selects one actor at random at each round.
         /// </summary>
-        public static ResultSet leaveOneActorOutRandom(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
+        public static ResultSet leaveOneActorOutRandom(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10, bool verbose = true)
         {
-            Console.WriteLine("Cross Validation LOAO");
+            if (!verbose)
+                Console.WriteLine("Cross Validation LOAO");
 
             ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
@@ -263,12 +268,14 @@ namespace Validator
             nbOfRounds = (nbOfRounds <= 0) ? 1 : nbOfRounds;
             for (int i = 0; i < nbOfRounds; i++)
             {
-                Console.WriteLine("Data extraction...");
+                if (!verbose)
+                    Console.WriteLine("Data extraction...");
                 string subject = dataset.getRandomSubject();
                 dataset.initTrainAndTestData(subject, out trainData, out testData);
 
-                tmp = crossValidationResultSet(learning_params, trainData, testData);
-                Console.WriteLine("Average : " + tmp.getAverage());
+                tmp = crossValidationResultSet(learning_params, trainData, testData, verbose);
+                if (!verbose)
+                    Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
             }
 
@@ -279,9 +286,10 @@ namespace Validator
         /// Performs a leave-One-Actor-Out (LOAO) cross validation on the given dataset.
         /// Tests all actors one by one.
         /// </summary>
-        public static ResultSet leaveOneActorOut(Dataset dataset, LearningParams learning_params)
+        public static ResultSet leaveOneActorOut(Dataset dataset, LearningParams learning_params, bool verbose = true)
         {
-            Console.WriteLine("Cross Validation LOAO");
+            if (!verbose)
+                Console.WriteLine("Cross Validation LOAO");
 
             ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
@@ -292,11 +300,13 @@ namespace Validator
             
             for (int i = 0; i < subjects.Count; i++)
             {
-                Console.WriteLine("Data extraction...");
+                if (!verbose)
+                    Console.WriteLine("Data extraction...");
                 dataset.initTrainAndTestData(subjects[i], out trainData, out testData);
 
-                tmp = crossValidationResultSet(learning_params, trainData, testData);
-                Console.WriteLine("Average : " + tmp.getAverage());
+                tmp = crossValidationResultSet(learning_params, trainData, testData, verbose);
+                if (!verbose)
+                    Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
             }
 
@@ -307,9 +317,10 @@ namespace Validator
         /// Performs a leave-One-Sequence-Out Random (LOSOR) cross validation on the given dataset.
         /// Selects one sequence at random at each round.
         /// </summary>
-        public static ResultSet leaveOneSequenceOutRandom(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
+        public static ResultSet leaveOneSequenceOutRandom(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10, bool verbose = true)
         {
-            Console.WriteLine("Cross Validation LOSO");
+            if (!verbose)
+                Console.WriteLine("Cross Validation LOSO");
 
             ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
@@ -317,12 +328,14 @@ namespace Validator
             nbOfRounds = (nbOfRounds <= 0) ? 1 : nbOfRounds;
             for (int i = 0; i < nbOfRounds; i++)
             {
-                Console.WriteLine("Data extraction...");
+                if (!verbose)
+                    Console.WriteLine("Data extraction...");
                 List<double[]> sequence = dataset.getRandomSequence();
                 dataset.initTrainAndTestData(sequence, out trainData, out testData);
 
-                tmp = crossValidationResultSet(learning_params, trainData, testData);
-                Console.WriteLine("Average : " + tmp.getAverage());
+                tmp = crossValidationResultSet(learning_params, trainData, testData, verbose);
+                if (!verbose)
+                    Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
             }
 
@@ -333,9 +346,10 @@ namespace Validator
         /// Performs a leave-One-Sequence-Out (LOSO) cross validation on the given dataset.
         /// Tests all sequences one by one.
         /// </summary>
-        public static ResultSet leaveOneSequenceOut(Dataset dataset, LearningParams learning_params)
+        public static ResultSet leaveOneSequenceOut(Dataset dataset, LearningParams learning_params, bool verbose = true)
         {
-            Console.WriteLine("Cross Validation LOSO");
+            if (!verbose)
+                Console.WriteLine("Cross Validation LOSO");
 
             ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
@@ -345,12 +359,14 @@ namespace Validator
 
             for (int i = 0; i < entries.Count; i++)
             {
-                Console.WriteLine("Data extraction...");
+                if (!verbose)
+                    Console.WriteLine("Data extraction...");
                 
                 dataset.initTrainAndTestData(entries[i].Sequence, out trainData, out testData);
 
-                tmp = crossValidationResultSet(learning_params, trainData, testData);
-                Console.WriteLine("Average : " + tmp.getAverage());
+                tmp = crossValidationResultSet(learning_params, trainData, testData, verbose);
+                if (!verbose)
+                    Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
             }
 
@@ -360,9 +376,10 @@ namespace Validator
         /// <summary>
         /// Performs a 2-fold cross validation on the given dataset, chooses randomly the half of actors for training.
         /// </summary>
-        public static ResultSet twoFoldHalfActors(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10)
+        public static ResultSet twoFoldHalfActors(Dataset dataset, LearningParams learning_params, int nbOfRounds = 10, bool verbose = true)
         {
-            Console.WriteLine("Cross Validation 2-fold half actors");
+            if (!verbose)
+                Console.WriteLine("Cross Validation 2-fold half actors");
 
             ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);       
             TrainDataType trainData, testData;
@@ -370,16 +387,19 @@ namespace Validator
             nbOfRounds = (nbOfRounds <= 0) ? 1 : nbOfRounds;
             for (int i = 0; i < nbOfRounds; i++)
             {
-                Console.WriteLine("Data extraction...");
+                if (!verbose)
+                    Console.WriteLine("Data extraction...");
 
                 dataset.initTrainAndTestData(out trainData, out testData);
 
-                tmp = crossValidationResultSet(learning_params, trainData, testData);
-                Console.WriteLine("Average : " + tmp.getAverage());
+                tmp = crossValidationResultSet(learning_params, trainData, testData, verbose);
+                if (!verbose)
+                    Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
 
-                tmp = crossValidationResultSet(learning_params, testData, trainData);
-                Console.WriteLine("Average : " + tmp.getAverage());
+                tmp = crossValidationResultSet(learning_params, testData, trainData, verbose);
+                if (!verbose)
+                    Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
             }
 
@@ -389,9 +409,10 @@ namespace Validator
         /// <summary>
         /// Performs a 2-fold cross validation on the given dataset, takes the actor set given for training and the others for testing.
         /// </summary>
-        public static ResultSet twoFoldActorsTrainingSet(Dataset dataset, LearningParams learning_params, string[] actorsTrainingSet, int nbOfRounds = 10)
+        public static ResultSet twoFoldActorsTrainingSet(Dataset dataset, LearningParams learning_params, string[] actorsTrainingSet, int nbOfRounds = 10, bool verbose = true)
         {
-            Console.WriteLine("Cross Validation 2-fold training actors set");
+            if (!verbose)
+                Console.WriteLine("Cross Validation 2-fold training actors set");
 
             ResultSet tmp = null, globalResult = new ResultSet(learning_params.ClassLabels);
             TrainDataType trainData, testData;
@@ -399,16 +420,19 @@ namespace Validator
             nbOfRounds = (nbOfRounds <= 0) ? 1 : nbOfRounds;
             for (int i = 0; i < nbOfRounds; i++)
             {
-                Console.WriteLine("Data extraction...");
+                if (!verbose)
+                    Console.WriteLine("Data extraction...");
 
                 dataset.initTrainAndTestData(actorsTrainingSet, out trainData, out testData);
 
-                tmp = crossValidationResultSet(learning_params, trainData, testData);
-                Console.WriteLine("Average : " + tmp.getAverage());
+                tmp = crossValidationResultSet(learning_params, trainData, testData, verbose);
+                if (!verbose)
+                    Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
 
-                tmp = crossValidationResultSet(learning_params, testData, trainData);
-                Console.WriteLine("Average : " + tmp.getAverage());
+                tmp = crossValidationResultSet(learning_params, testData, trainData, verbose);
+                if (!verbose)
+                    Console.WriteLine("Average : " + tmp.getAverage());
                 globalResult.addResult(tmp);
             }
  
@@ -419,7 +443,7 @@ namespace Validator
         /// Core function of the cross validation.
         /// Trains the model with the given train data and tests it with the test data.
         /// </summary>
-        public static ResultSet crossValidationResultSet(LearningParams learning_params, TrainDataType trainData, TrainDataType testData)
+        public static ResultSet crossValidationResultSet(LearningParams learning_params, TrainDataType trainData, TrainDataType testData, bool verbose = true)
         {
             //Cross Validation     
 
@@ -436,7 +460,8 @@ namespace Validator
             //Train the model and save the config
             if(TRAINING == TRAINING_MODES.SAVE)
             {
-                Console.WriteLine("Training...");
+                if (!verbose)
+                    Console.WriteLine("Training...");
                 bokp.Train(trainData.Dictionary);
             
                 //Save the train config into a file.
@@ -447,7 +472,8 @@ namespace Validator
             //Train the model by loading a config file
             else if(TRAINING == TRAINING_MODES.LOAD)
             {
-                Console.WriteLine("Reading training file ...");
+                if (!verbose)
+                    Console.WriteLine("Reading training file ...");
                 XmlDocument doc = new XmlDocument();
                 doc.Load(folderName + "/TrainConfig_" + FILE_ID + ".xml");
                 bokp.Config.LoadXML(doc);
@@ -455,12 +481,14 @@ namespace Validator
             //Train the model only
             else
             {
-                Console.WriteLine("Training...");
+                if (!verbose)
+                    Console.WriteLine("Training...");
                 bokp.Train(trainData.Dictionary);
             }
 
             //Evaluate each sequence
-            Console.WriteLine("Testing ...");
+            if (!verbose)
+                Console.WriteLine("Testing ...");
             foreach (string label in learning_params.ClassLabels)
             {
                 foreach (var sequence in testData[label])
@@ -471,10 +499,6 @@ namespace Validator
                     resultSet.addTest(label, recognition);               
                 }
             }
-<<<<<<< HEAD
-=======
-
->>>>>>> cooperative
 #if DEBUG
             Console.WriteLine(resultSet);
 
