@@ -39,8 +39,11 @@ namespace CooperativeCoevolutionaryAlgorithm
 
         static int NB_FEATURES = 20;
         static int DIM_FEATURES = 3;                        //Dimension of each feature
-        static int MAX_GENERATION_WITHOUT_CHANGE = 100;
-        static int MAX_GENERATION = 500;
+        static int MAX_GENERATION_WITHOUT_CHANGE = 250;
+        static int MAX_GENERATION = 800;
+
+        //You can change the output log file here.
+        static string LogFilename = "logFile.log";
 
         private static readonly object lockEqualIndividual = new object();
 
@@ -49,18 +52,17 @@ namespace CooperativeCoevolutionaryAlgorithm
         //Entry point of the evolutionary algorithm.
         static void Main(string[] args)
         {
+            File.Create(LogFilename).Close();
+
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             realDataset.normaliseSkeletons();
-
-            //You can change the output log file here.
-            StreamWriter logFile = File.AppendText("logFile.log");
 
             //Parameters of the evolutionary algorithm
             Individual.NB_FEATURES = NB_FEATURES;
             Individual.NB_LABELS = realDataset.Labels.Count();
             Individual.NB_INSTANCES = realDataset.Data.Count();
 
-            int populationSize = 3, offspringSize = 1;
+            int populationSize = 10, offspringSize = 1;
             int generations_without_change = 0;
             Individual best_features = null, best_parameters = null, best_instances = null;
 
@@ -78,10 +80,12 @@ namespace CooperativeCoevolutionaryAlgorithm
             array_populations[2].createFirstGeneration(Population.IndividualType.INSTANCES);
     #endregion
 
+    #region Evolutionary_Algorithm
             //Evaluate the fitness of each individual of each population
             foreach (Population pop in array_populations)
             {
                 pop.evaluateFitness();
+                Console.WriteLine();
                 pop.order(populationSize);
             }
 
@@ -92,6 +96,8 @@ namespace CooperativeCoevolutionaryAlgorithm
             int generationNumber = 0;
             do
             {
+                Console.WriteLine("------------------------------- \r\nRound : " + generationNumber + "\n");
+
                 //Select the population to evolve
                 Population population = selectPopulationAtRandom(array_populations,new double[]{2/6.0,2/6.0,2/6.0});
                 SelectedIndividualType = population.PopulationType;
@@ -105,8 +111,8 @@ namespace CooperativeCoevolutionaryAlgorithm
 
                 //Select individuals from other populations
                 Population[] other_populations = array_populations.Where(x => x != population).ToArray();
-                Individual individual2 = UsualFunctions.RankSelection(other_populations[0]);                 //Parameters or Features
-                Individual individual3 = UsualFunctions.RankSelection(other_populations[1]);                 //Instances or Parameters
+                Individual individual2 = UsualFunctions.RankSelection(other_populations[0]);                  //Parameters or Features
+                Individual individual3 = UsualFunctions.RankSelection(other_populations[1]);                  //Instances or Parameters
                                                  
                 //evaluateFitness(Features, Parameters, Instances);
                 switch ((int)SelectedIndividualType)
@@ -115,8 +121,6 @@ namespace CooperativeCoevolutionaryAlgorithm
                     case 1: round_fitness = evaluateFitness((IndividualFeatures)individual2, (IndividualParameters)individual1, (IndividualInstances)individual3); break;
                     case 2: round_fitness = evaluateFitness((IndividualFeatures)individual2, (IndividualParameters)individual3, (IndividualInstances)individual1); break;
                 }
-                Console.WriteLine(round_fitness);
-
 
                 //Ordering the all population according to the fitness
                 foreach (Population pop in array_populations)
@@ -127,7 +131,7 @@ namespace CooperativeCoevolutionaryAlgorithm
                 //End loop verifications
                 if (prev_best_fitness < round_fitness)
                 {
-                    Console.WriteLine("****************************** NEW BEST : " + round_fitness + " ******************************");
+                    Console.WriteLine("******* NEW BEST : " + round_fitness + " *******");
                     
                     switch ((int)SelectedIndividualType)
                     {
@@ -138,7 +142,9 @@ namespace CooperativeCoevolutionaryAlgorithm
                     prev_best_fitness = round_fitness;
                     generations_without_change = 0;
 
-                    addRoundToLog(logFile, generationNumber, (IndividualFeatures)best_features, (IndividualParameters)best_parameters, (IndividualInstances)best_instances);
+                    Console.WriteLine(best_features.result);
+
+                    addRoundToLog(generationNumber, (IndividualFeatures)best_features, (IndividualParameters)best_parameters, (IndividualInstances)best_instances);
                 }
                 else
                 {
@@ -152,7 +158,6 @@ namespace CooperativeCoevolutionaryAlgorithm
 
                 Console.WriteLine();
                 Console.WriteLine("generations_without_change : " + generations_without_change);
-                Console.WriteLine("Generation : " + generationNumber);
                 Console.WriteLine();
 
                 
@@ -160,12 +165,17 @@ namespace CooperativeCoevolutionaryAlgorithm
                 generationNumber++;
             } while (generations_without_change < MAX_GENERATION_WITHOUT_CHANGE && generationNumber < MAX_GENERATION);
 
+
+    #endregion
+
+    #region Writing_Results
+
             Console.WriteLine("END");
 
-            Console.WriteLine("Best round : " + round_fitness);
+            Console.WriteLine("Best round : " + prev_best_fitness);
 
             //Writing of the results on the console and into a file
-            string s = "Best Generation (total. : " + generationNumber + " ) : " + round_fitness + "\r\n" + best_features + "\r\n" + best_parameters + "\r\n" + best_instances + "\r\n" + best_features.result;
+            string s = "Best Individuals : \r\n" + best_features + "\r\n" + best_parameters + "\r\n" + best_instances + "\r\n" + best_features.result;
 
             Console.WriteLine(s);
             string filename = "GeneticResult.log";
@@ -175,14 +185,12 @@ namespace CooperativeCoevolutionaryAlgorithm
             writer.Close();
 
             System.IO.Directory.CreateDirectory("Individuals");
-            best_features.ToXML().Save("Individuals/BestRoundFeatures.xml");
-            best_parameters.ToXML().Save("Individuals/BestRoundParameters.xml");
-            best_instances.ToXML().Save("Individuals/BestRoundInstances.xml");
 
             array_populations[0].Generation[0].ToXML().Save("Individuals/BestIndividualFeatures.xml");
             array_populations[1].Generation[0].ToXML().Save("Individuals/BestIndividualParameters.xml");
             array_populations[2].Generation[0].ToXML().Save("Individuals/BestIndividualInstances.xml");
-            
+
+    #endregion
 
             Console.ReadKey();
         }
@@ -222,13 +230,13 @@ namespace CooperativeCoevolutionaryAlgorithm
                 DataType trainData, testData;
                 InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
 
-                result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData);
+                result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false);
             }
 
             double old_f = individual.FitnessScore;
 
             if (individual.GetType() != typeof(IndividualInstances))
-                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 1);
+                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 1, false);
 
             double new_f = result.getAverage();
 
@@ -268,11 +276,11 @@ namespace CooperativeCoevolutionaryAlgorithm
             { 
                 DataType trainData, testData;
                 InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
-                result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData);
+                result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false);
             }
             else 
             {
-                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 2);
+                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 2, false);
             }
 
             //Save the result into the individuals.
@@ -324,16 +332,20 @@ namespace CooperativeCoevolutionaryAlgorithm
             return result.getAverage();
         }
 
-        public static void addRoundToLog(TextWriter logFile, int numRound, IndividualFeatures best_features, IndividualParameters best_parameters, IndividualInstances best_instances)
+        public static void addRoundToLog(int numRound, IndividualFeatures best_features, IndividualParameters best_parameters, IndividualInstances best_instances)
         {
+            ResultSet result = (best_features.result != null)?(best_features.result):((best_parameters.result != null)?(best_parameters.result):((best_instances.result != null)?(best_instances.result):(null)));
+
+            StreamWriter logFile = File.AppendText(LogFilename);
+
             logFile.WriteLine("Round : " + numRound);
             logFile.WriteLine(best_features);
             logFile.WriteLine(best_parameters);
             logFile.WriteLine(best_instances);
-            logFile.WriteLine(best_features.result);
+            logFile.WriteLine(result);
             logFile.WriteLine("-------------------------------");
 
-            logFile.Flush();
+            logFile.Close();
         }
 
         public static Population selectPopulationAtRandom(Population[] array, double[] probabilities)

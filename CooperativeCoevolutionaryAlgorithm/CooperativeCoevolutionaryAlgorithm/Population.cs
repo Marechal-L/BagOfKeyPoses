@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Xml;
 using Validator;
 
@@ -76,15 +77,20 @@ namespace CooperativeCoevolutionaryAlgorithm
         /// </summary>
         public void evaluateFitness()
         {
+            int progressCount = 0;
 #if PARALLEL
             Parallel.For(0, PopulationSize, i =>
             {
                 Program.evaluateFitness(Generation[i]);
+                Interlocked.Increment(ref progressCount);
+                Console.Write("\r" + progressCount + "/" + PopulationSize);
             });
 #else
             for (int i = 0; i < PopulationSize; i++)
             {
                 Program.evaluateFitness(Generation[i]);
+                progressCount++;
+                Console.Write("\r" + progressCount + "/" + PopulationSize);
             }
 #endif
         }
@@ -200,16 +206,18 @@ namespace CooperativeCoevolutionaryAlgorithm
         public bool[] Features;
 
         /// <summary>
-        /// Create an individual as random as possible by applying several mutations.
+        /// Create an individual.
         /// </summary>
         public IndividualFeatures()
         {
             Features = new bool[NB_FEATURES];
 
-            int nbOfMutations = UsualFunctions.random.Next(NB_FEATURES + NB_LABELS);
-            for (int i = 0; i < nbOfMutations; i++)
+            //At least 25% of ones
+            double PROB_ONES = 0.25 + (double)UsualFunctions.random.NextDouble() * 0.75;
+
+            for (int i = 0; i < Features.Length; i++)
             {
-                mutate();
+                Features[i] = ((double)UsualFunctions.random.NextDouble() < PROB_ONES);
             }
         }
 
@@ -399,13 +407,6 @@ namespace CooperativeCoevolutionaryAlgorithm
                     }
                 }
             }
-
-
-            
-
-            
-
-           
         }
 
         public override void Recombine(Individual parent)

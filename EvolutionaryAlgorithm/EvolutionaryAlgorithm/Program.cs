@@ -72,10 +72,10 @@ namespace EvolutionaryAlgorithm
             //Order
             population.order(populationSize);
 
-            Console.WriteLine("First Generation : ");
+            Console.WriteLine("\nFirst Generation : ");
             Console.WriteLine(population);
 
-            double prev_best_fitness = population.Generation[0].FitnessScore;
+            double prev_best_fitness = -1;
 
             //Main loop of the algorithm
             int generationNumber=0;
@@ -176,7 +176,7 @@ namespace EvolutionaryAlgorithm
 
     #region Writing_Results
             //Writing of the results on the console and into a file
-            string s = "Best Individual (gen. " + generationNumber + " ) : " + population.Generation[0] + "\n";
+            string s = "Best Individual : " + population.Generation[0] + "\n";
             s += "\nAll population : \n" + population;
             Console.WriteLine(s);
 
