@@ -16,6 +16,7 @@
 
 #define PARALLEL
 
+using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,15 +40,15 @@ namespace EvolutionaryAlgorithm
         static int DIM_FEATURES = 3;                        //Dimension of each feature
         static int MAX_GENERATION_WITHOUT_CHANGE = 100;
         static int MAX_GENERATION = 500;
-
-        //You can change the output log file here.
-        static string LogFilename = "logFile.log";
+        static string LogFilename = "logFile.log";          //You can change the output log file here.
+        static Stopwatch timer = new Stopwatch();
 
         private static readonly object lock_equalIndividual = new object();
 
         //Entry point of the evolutionary algorithm.
         static void Main(string[] args)
         {
+            timer.Start();
             File.Create(LogFilename).Close();
 
             //Choose the dataset to load.
@@ -83,6 +84,7 @@ namespace EvolutionaryAlgorithm
             do{
                 int progressCount = 0;
                 Console.WriteLine("------------------------------- \r\nRound : "+generationNumber);
+                Console.WriteLine(DateTime.Now + " - Time elapsed : " + timer.Elapsed + "\n");
 #if PARALLEL
                 Parallel.For(0, offspringSize, crossover =>
                 {
@@ -231,6 +233,7 @@ namespace EvolutionaryAlgorithm
         {
             StreamWriter logFile = File.AppendText(LogFilename);
 
+            logFile.WriteLine(DateTime.Now + " - Time elapsed : " + timer.Elapsed);
             logFile.WriteLine("Round : " + numRound);
             logFile.WriteLine(bestIndividual);
             logFile.WriteLine();

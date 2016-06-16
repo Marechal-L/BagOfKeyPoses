@@ -41,9 +41,8 @@ namespace CooperativeCoevolutionaryAlgorithm
         static int DIM_FEATURES = 3;                        //Dimension of each feature
         static int MAX_GENERATION_WITHOUT_CHANGE = 250;
         static int MAX_GENERATION = 800;
-
-        //You can change the output log file here.
-        static string LogFilename = "logFile.log";
+        static string LogFilename = "logFile.log";          //You can change the output log file here.
+        static Stopwatch timer = new Stopwatch();
 
         private static readonly object lockEqualIndividual = new object();
 
@@ -52,6 +51,7 @@ namespace CooperativeCoevolutionaryAlgorithm
         //Entry point of the evolutionary algorithm.
         static void Main(string[] args)
         {
+            timer.Start();
             File.Create(LogFilename).Close();
 
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
@@ -96,7 +96,8 @@ namespace CooperativeCoevolutionaryAlgorithm
             int generationNumber = 0;
             do
             {
-                Console.WriteLine("------------------------------- \r\nRound : " + generationNumber + "\n");
+                Console.WriteLine("------------------------------- \r\nRound : " + generationNumber);
+                Console.WriteLine(DateTime.Now + " - Time elapsed : " + timer.Elapsed + "\n");
 
                 //Select the population to evolve
                 Population population = selectPopulationAtRandom(array_populations,new double[]{2/6.0,2/6.0,2/6.0});
@@ -171,7 +172,9 @@ namespace CooperativeCoevolutionaryAlgorithm
     #region Writing_Results
 
             Console.WriteLine("END");
+            timer.Stop();
 
+            Console.WriteLine("Time elapsed : " + timer.Elapsed);
             Console.WriteLine("Best round : " + prev_best_fitness);
 
             //Writing of the results on the console and into a file
@@ -338,6 +341,7 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             StreamWriter logFile = File.AppendText(LogFilename);
 
+            logFile.WriteLine(DateTime.Now + " - Time elapsed : " + timer.Elapsed);
             logFile.WriteLine("Round : " + numRound);
             logFile.WriteLine(best_features);
             logFile.WriteLine(best_parameters);
