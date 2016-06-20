@@ -176,6 +176,8 @@ namespace EvolutionaryAlgorithm
         }
     }
 
+    #region Tree_Node
+
     /// <summary>
     ///  Represents a tree node used for the joints recombination process.
     /// </summary>
@@ -241,7 +243,7 @@ namespace EvolutionaryAlgorithm
         }
 
         /// <summary>
-        /// 
+        /// Loops through the tree and replaces the child's values by the value of child nodes of the current node.  
         /// </summary>
         public void recombineJoints(ref Boolean[] child, Boolean[] adult)
         {
@@ -252,4 +254,6 @@ namespace EvolutionaryAlgorithm
             }
         }
     }
+
+    #endregion
 }
