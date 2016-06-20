@@ -14,15 +14,6 @@
    limitations under the License.
 */
 
-
-//Look at crossValidationResultSet() function for the purpose of replaying the validation.
-//Define value to set if the train model will be saved, loaded or executed normally.
-/*
- * SAVE
- * LOAD
- */
-#define LOAD
-
 using System;
 using System.Xml;
 using System.Linq;

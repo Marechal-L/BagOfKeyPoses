@@ -1,4 +1,4 @@
-Here are two differents main functions. 
+Here are two different main functions. 
 If you don't know how to select wich one is executed you can follow this explanation from microsoft : https://msdn.microsoft.com/en-us/library/x3eht538.aspx 
 
 Sample Usage 1
@@ -31,6 +31,8 @@ Some definitions from Wikipedia.org :
 Leave One Out : https://en.wikipedia.org/wiki/Cross-validation_(statistics)#Leave-one-out_cross-validation  
 2-Fold : https://en.wikipedia.org/wiki/Cross-validation_(statistics)#2-fold_cross-validation    
 
+You can also save the training configuration to load it later to obtain the same results.
+Just modify the ValidationTest.TRAINING value in the main function with the ValidationTest.TRAINING_MODES values. 
 
 Result set
 ----------

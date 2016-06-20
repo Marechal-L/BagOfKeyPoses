@@ -90,7 +90,7 @@ namespace SampleUsage
 
 
 			//Uncomment if you want to save the training
-            //ValidationTest.TRAINING = ValidationTest.TRAINING_MODES.SAVE;
+            ValidationTest.TRAINING = ValidationTest.TRAINING_MODES.CLASSIC;
 
             //Here are all tests already implemented, you can change which test is executed by changing the #define at the beginning of the file.
 
