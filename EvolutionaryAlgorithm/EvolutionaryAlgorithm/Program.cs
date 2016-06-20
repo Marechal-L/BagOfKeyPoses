@@ -34,15 +34,15 @@ namespace EvolutionaryAlgorithm
 {
     class Program
     {
-        public static Dataset realDataset;                 //Dataset generated from txt files.
+        public static Dataset realDataset;                  //Dataset loaded from txt files.
 
-        static int NB_FEATURES = 20;
+        static int NB_FEATURES = 20;                        //Number of features
         static int DIM_FEATURES = 3;                        //Dimension of each feature
-        static int MAX_GENERATION_WITHOUT_CHANGE = 100;
-        static int MAX_GENERATION = 500;
+        static int MAX_GENERATION_WITHOUT_CHANGE = 100;     
+        static int MAX_GENERATION = 500;                    
         static string LogFilename = "logFile.log";          //You can change the output log file here.
+        
         static Stopwatch timer = new Stopwatch();
-
         private static readonly object lock_equalIndividual = new object();
 
         //Entry point of the evolutionary algorithm.
@@ -216,7 +216,7 @@ namespace EvolutionaryAlgorithm
             double old_f = individual.FitnessScore;
 
             //You can change the validation method here
-            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },1, false);
+            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },10, false);
 
             double new_f = result.getAverage();
 

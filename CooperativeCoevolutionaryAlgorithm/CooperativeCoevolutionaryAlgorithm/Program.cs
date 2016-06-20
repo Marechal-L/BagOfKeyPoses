@@ -37,15 +37,14 @@ namespace CooperativeCoevolutionaryAlgorithm
     {
         public static Dataset realDataset;                 //Dataset generated from txt files.
 
-        static int NB_FEATURES = 20;
-        static int DIM_FEATURES = 3;                        //Dimension of each feature
-        static int MAX_GENERATION_WITHOUT_CHANGE = 250;
-        static int MAX_GENERATION = 800;
-        static string LogFilename = "logFile.log";          //You can change the output log file here.
-        static Stopwatch timer = new Stopwatch();
+        public static int NB_FEATURES = 20;                        //Number of features
+        public static int DIM_FEATURES = 3;                        //Dimension of each feature
+        public static int MAX_GENERATION_WITHOUT_CHANGE = 250;
+        public static int MAX_GENERATION = 800;
+        public static string LogFilename = "logFile.log";          //You can change the output log file here.
 
+        public static Stopwatch timer = new Stopwatch();
         private static readonly object lockEqualIndividual = new object();
-
         static Population.IndividualType SelectedIndividualType = Population.IndividualType.FEATURES;
 
         //Entry point of the evolutionary algorithm.
@@ -54,6 +53,9 @@ namespace CooperativeCoevolutionaryAlgorithm
             timer.Start();
             File.Create(LogFilename).Close();
 
+            //Choose the dataset to load.
+            //You can implement your own parser. If you already did it,
+            //make sure to compile the BagOfKeYPoses_Library solution in release mode first to generate the new .dll file.
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             realDataset.normaliseSkeletons();
 
@@ -80,7 +82,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             array_populations[2].createFirstGeneration(Population.IndividualType.INSTANCES);
     #endregion
 
-    #region Evolutionary_Algorithm
+    #region Evolutionary_Algorithm_Loop
             //Evaluate the fitness of each individual of each population
             foreach (Population pop in array_populations)
             {
@@ -198,13 +200,14 @@ namespace CooperativeCoevolutionaryAlgorithm
             Console.ReadKey();
         }
 
+    #region Fitness_Functions
         /// <summary>
         /// Evaluate the fitness score of the given individual
         /// </summary>
         /// <returns>Boolean representing if the score is better or not</returns> 
         public static bool evaluateFitness(Individual individual)
         {
-            ResultSet result = null;
+            ResultSet result = new ResultSet(realDataset.Labels);
             Dataset modifiedDataset = null;
             LearningParams learning_params = null;
             learning_params = new LearningParams();
@@ -233,7 +236,11 @@ namespace CooperativeCoevolutionaryAlgorithm
                 DataType trainData, testData;
                 InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
 
-                result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false);
+                for (int i = 0; i < 1; i++)
+                {
+                    result.addResult(ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false));
+                    result.addResult(ValidationTest.crossValidationResultSet(learning_params, testData, trainData, false));
+                }
             }
 
             double old_f = individual.FitnessScore;
@@ -258,7 +265,7 @@ namespace CooperativeCoevolutionaryAlgorithm
         /// <returns>Boolean representing if the score is better or not</returns> 
         public static double evaluateFitness(IndividualFeatures individual_features, IndividualParameters individual_parameters, IndividualInstances individual_instances)
         {
-            ResultSet result = null;
+            ResultSet result = new ResultSet(realDataset.Labels);
             Dataset modifiedDataset = null;
             LearningParams learning_params = null;
 
@@ -279,11 +286,16 @@ namespace CooperativeCoevolutionaryAlgorithm
             { 
                 DataType trainData, testData;
                 InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
-                result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false);
+
+                for (int i = 0; i < 1; i++)
+                {
+                    result.addResult(ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false));
+                    result.addResult(ValidationTest.crossValidationResultSet(learning_params, testData, trainData, false));
+                }
             }
             else 
             {
-                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 2, false);
+                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 1, false);
             }
 
             //Save the result into the individuals.
@@ -334,6 +346,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
             return result.getAverage();
         }
+    #endregion
 
         public static void addRoundToLog(int numRound, IndividualFeatures best_features, IndividualParameters best_parameters, IndividualInstances best_instances)
         {
@@ -375,7 +388,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             return null;
         }
 
-        #region DATASET_MODIFICATIONS
+    #region DATASET_MODIFICATIONS
 
         /// <summary>
         /// Modifiy the dataset by removing disabled features according to the given individual.

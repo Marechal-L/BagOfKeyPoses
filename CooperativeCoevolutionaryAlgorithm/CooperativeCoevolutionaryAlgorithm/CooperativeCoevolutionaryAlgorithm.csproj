@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Population.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Program2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="UsualFunctions.cs" />

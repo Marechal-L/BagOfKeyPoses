@@ -613,7 +613,7 @@ namespace CooperativeCoevolutionaryAlgorithm
         {
             this.FitnessScore = double.Parse(doc.GetElementsByTagName("FitnessScore")[0].Attributes["value"].Value);
 
-            string s = doc.GetElementsByTagName("Features")[0].Attributes["value"].Value;
+            string s = doc.GetElementsByTagName("Instances")[0].Attributes["value"].Value;
             s = s.Replace(" ", "");
             Instances = s.Select(c => c == '1').ToArray();
         }
