@@ -14,6 +14,7 @@
    limitations under the License.
 */
 
+//There is the same parameter in Population.cs
 #define PARALLEL
 
 using System.Diagnostics;
@@ -36,11 +37,12 @@ namespace EvolutionaryAlgorithm
     {
         public static Dataset realDataset;                  //Dataset loaded from txt files.
 
-        static int NB_FEATURES = 20;                        //Number of features
-        static int DIM_FEATURES = 3;                        //Dimension of each feature
+        public static int NB_VALIDATION_TESTS = 5;                  //Define the number of rounds per each validation test.
+        static int NB_FEATURES = 20;                                //Number of features
+        static int DIM_FEATURES = 3;                                //Dimension of each feature
         static int MAX_GENERATION_WITHOUT_CHANGE = 100;     
         static int MAX_GENERATION = 500;                    
-        static string LogFilename = "logFile.log";          //You can change the output log file here.
+        static string LogFilename = "logFile.log";                  //You can change the output log file here.
         
         static Stopwatch timer = new Stopwatch();
         private static readonly object lock_equalIndividual = new object();
@@ -59,15 +61,18 @@ namespace EvolutionaryAlgorithm
 
             //Parameters of the evolutionary algorithm
             Individual.NB_FEATURES = NB_FEATURES;
-            int populationSize = 10, offspringSize = 20;
+            int populationSize = 10;
+            int offspringSize = 20;
             int generations_without_change = 0;
             Individual individual, equalIndividual;
 
-    #region Evolutionary_Algorithm_Loop
+    
             //Create initial population
             Population population = new Population(populationSize, offspringSize, NB_FEATURES);
-            
-            //Evalutate Fitness
+
+    #region First_Evaluation
+            //Evaluate Fitness
+            Console.WriteLine("Evaluating the first generation");
             population.evaluateFitness();
 
             //Order
@@ -75,11 +80,12 @@ namespace EvolutionaryAlgorithm
 
             Console.WriteLine("\nFirst Generation : ");
             Console.WriteLine(population);
-
-            double prev_best_fitness = -1;
-
+    #endregion
+            
+    #region Evolutionary_Algorithm_Loop
             //Main loop of the algorithm
-            int generationNumber=0;
+            double prev_best_fitness = -1;
+            int generationNumber = 0;
             int progressMax = offspringSize;
             do{
                 int progressCount = 0;
@@ -216,7 +222,7 @@ namespace EvolutionaryAlgorithm
             double old_f = individual.FitnessScore;
 
             //You can change the validation method here
-            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },10, false);
+            ResultSet result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, NB_VALIDATION_TESTS, false);
 
             double new_f = result.getAverage();
 

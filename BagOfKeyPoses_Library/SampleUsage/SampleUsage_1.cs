@@ -39,7 +39,7 @@
 *       
 *      Take a look at the README for more informations. 
 */
-#define LOAOR
+#define TWOFOLDSET
 
 
 using System;
@@ -89,7 +89,7 @@ namespace SampleUsage
             string filename = "logs/result_";
 
 
-			//Uncomment if you want to save the training
+			//Change the training mode to save, load or classic here.
             ValidationTest.TRAINING = ValidationTest.TRAINING_MODES.CLASSIC;
 
             //Here are all tests already implemented, you can change which test is executed by changing the #define at the beginning of the file.
@@ -110,7 +110,7 @@ namespace SampleUsage
             filename += "LOAO";
 #endif
 #if LOAOR
-            result = ValidationTest.leaveOneActorOutRandom(dataset, learning_params, 4);
+            result = ValidationTest.leaveOneActorOutRandom(dataset, learning_params,20);
             Console.Write("leaveOneActorOutRandom : ");
             filename += "LOAOR";
 #endif
@@ -125,7 +125,7 @@ namespace SampleUsage
             filename += "TWOFOLD";
 #endif
 #if TWOFOLDSET
-            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },2);
+            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },1);
             Console.Write("twoFoldActorsTrainingSet : ");
             filename += "TWOFOLDSET";
 #endif
@@ -134,7 +134,7 @@ namespace SampleUsage
             Console.WriteLine(result);
 
             //Print the result into a file
-            //result.fileOutput(filename+".log");
+            result.fileOutput(filename+".log");
         }
 
         /// <summary>

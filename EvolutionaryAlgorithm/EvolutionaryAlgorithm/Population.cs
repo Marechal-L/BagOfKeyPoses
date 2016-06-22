@@ -16,6 +16,9 @@
 
 #define PARALLEL
 
+//Define it to start the algorithm with one individual with all default parameters values in each population.
+#define ONE_DEFAULT_INDIVIDUAL
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,6 +54,11 @@ namespace EvolutionaryAlgorithm
             {
                 Generation[i] = new Individual();
             }
+
+#if ONE_DEFAULT_INDIVIDUAL
+            Generation[0] = new Individual("");
+#endif
+
         }
 
         /// <summary>
@@ -156,6 +164,15 @@ namespace EvolutionaryAlgorithm
             for (int i = 0; i < Genes.Length; i++)
             {
                 Genes[i] = ((double)UsualFunctions.random.NextDouble() < PROB_ONES);
+            }
+        }
+
+        public Individual(string s)
+        {
+            Genes = new bool[NB_FEATURES];
+            for (int i = 0; i < Genes.Length; i++)
+            {
+                Genes[i] = true;
             }
         }
 

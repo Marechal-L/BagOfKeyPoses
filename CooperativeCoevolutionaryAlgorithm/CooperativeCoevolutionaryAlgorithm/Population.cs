@@ -16,6 +16,10 @@
 
 #define PARALLEL
 
+//Define it to start the algorithm with one individual with all default parameters values in each population.
+#define ONE_DEFAULT_INDIVIDUAL
+
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,6 +61,15 @@ namespace CooperativeCoevolutionaryAlgorithm
                     case IndividualType.INSTANCES: Generation[i] = new IndividualInstances(); break;
                 }
             }
+
+#if ONE_DEFAULT_INDIVIDUAL
+            switch (type)
+            {
+                case IndividualType.PARAMETERS: Generation[0] = new IndividualParameters(""); break;
+                case IndividualType.FEATURES: Generation[0] = new IndividualFeatures(""); break;
+                case IndividualType.INSTANCES: Generation[0] = new IndividualInstances(""); break;
+            }
+#endif
         }
 
         /// <summary>
@@ -221,6 +234,15 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
         }
 
+        public IndividualFeatures(string s)
+        {
+            Features = new bool[NB_FEATURES];
+            for (int i = 0; i < Features.Length; i++)
+            {
+                Features[i] = true;
+            }
+        }
+
         public IndividualFeatures(IndividualFeatures individual)
         {
             this.Features = (bool[])individual.Features.Clone();
@@ -353,7 +375,7 @@ namespace CooperativeCoevolutionaryAlgorithm
 
     class IndividualParameters : Individual
     {
-        public static int MIN_K = 5, MAX_K = 130;
+        public static int MIN_K = 5, MAX_K = 130, DEFAULT_K = 8;
 
         public int[] K;
 
@@ -367,6 +389,15 @@ namespace CooperativeCoevolutionaryAlgorithm
             for (int i = 0; i < NB_LABELS; i++)
             {
                 K[i] = UsualFunctions.random.Next(MIN_K, MAX_K);
+            }
+        }
+
+        public IndividualParameters(string s)
+        {
+            K = new int[NB_LABELS];
+            for (int i = 0; i < K.Length; i++)
+            {
+                K[i] = DEFAULT_K;
             }
         }
 
@@ -525,6 +556,15 @@ namespace CooperativeCoevolutionaryAlgorithm
             for (int i = 0; i < Instances.Length; i++)
             {
                 Instances[i] = ((double)UsualFunctions.random.NextDouble() < PROB_ONES);
+            }
+        }
+
+        public IndividualInstances(string s)
+        {
+            Instances = new bool[NB_INSTANCES];
+            for (int i = 0; i < Instances.Length; i++)
+            {
+                Instances[i] = true;
             }
         }
 

@@ -14,6 +14,7 @@
    limitations under the License.
 */
 
+//There is the same parameter in Population.cs
 #define PARALLEL
 
 using System.Diagnostics;
@@ -37,8 +38,9 @@ namespace CooperativeCoevolutionaryAlgorithm
     {
         public static Dataset realDataset;                 //Dataset generated from txt files.
 
-        public static int NB_FEATURES = 20;                        //Number of features
-        public static int DIM_FEATURES = 3;                        //Dimension of each feature
+        public static int NB_VALIDATION_TESTS = 5;                  //Define the number of rounds per each validation test.
+        public static int NB_FEATURES = 20;                         //Number of features
+        public static int DIM_FEATURES = 3;                         //Dimension of each feature
         public static int MAX_GENERATION_WITHOUT_CHANGE = 250;
         public static int MAX_GENERATION = 800;
         public static string LogFilename = "logFile.log";          //You can change the output log file here.
@@ -63,12 +65,14 @@ namespace CooperativeCoevolutionaryAlgorithm
             Individual.NB_FEATURES = NB_FEATURES;
             Individual.NB_LABELS = realDataset.Labels.Count();
             Individual.NB_INSTANCES = realDataset.Data.Count();
+            IndividualParameters.DEFAULT_K = 8;
 
-            int populationSize = 10, offspringSize = 1;
-            int generations_without_change = 0;
-            Individual best_features = null, best_parameters = null, best_instances = null;
+            int populationSize = 10; 
+            int offspringSize = 1;
 
     #region Initialisation
+            Individual best_features = null, best_parameters = null, best_instances = null;
+
             //Create initial populations
             Population[] array_populations = new Population[3];
 
@@ -82,20 +86,24 @@ namespace CooperativeCoevolutionaryAlgorithm
             array_populations[2].createFirstGeneration(Population.IndividualType.INSTANCES);
     #endregion
 
-    #region Evolutionary_Algorithm_Loop
+    #region First_Evaluation
             //Evaluate the fitness of each individual of each population
             foreach (Population pop in array_populations)
             {
+                Console.WriteLine("Evaluating the first generation");
                 pop.evaluateFitness();
                 Console.WriteLine();
                 pop.order(populationSize);
             }
+            Console.WriteLine(array_populations[2]);
+    #endregion
 
-            double prev_best_fitness = -1;
-            double round_fitness = -1;
-
+    #region Evolutionary_Algorithm_Loop
             //Main loop of the algorithm
             int generationNumber = 0;
+            double prev_best_fitness = -1;
+            double round_fitness = -1;
+            int generations_without_change = 0;
             do
             {
                 Console.WriteLine("------------------------------- \r\nRound : " + generationNumber);
@@ -236,7 +244,7 @@ namespace CooperativeCoevolutionaryAlgorithm
                 DataType trainData, testData;
                 InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
 
-                for (int i = 0; i < 1; i++)
+                for (int i = 0; i < NB_VALIDATION_TESTS; i++)
                 {
                     result.addResult(ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false));
                     result.addResult(ValidationTest.crossValidationResultSet(learning_params, testData, trainData, false));
@@ -246,7 +254,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             double old_f = individual.FitnessScore;
 
             if (individual.GetType() != typeof(IndividualInstances))
-                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 1, false);
+                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, NB_VALIDATION_TESTS, false);
 
             double new_f = result.getAverage();
 
@@ -287,7 +295,7 @@ namespace CooperativeCoevolutionaryAlgorithm
                 DataType trainData, testData;
                 InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
 
-                for (int i = 0; i < 1; i++)
+                for (int i = 0; i < NB_VALIDATION_TESTS; i++)
                 {
                     result.addResult(ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false));
                     result.addResult(ValidationTest.crossValidationResultSet(learning_params, testData, trainData, false));
@@ -295,7 +303,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
             else 
             {
-                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 1, false);
+                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, NB_VALIDATION_TESTS, false);
             }
 
             //Save the result into the individuals.
@@ -440,8 +448,7 @@ namespace CooperativeCoevolutionaryAlgorithm
         {
             trainData = new DataType();
             testData = new DataType();
-
-            //Shuffler.Shuffle(dataset.Data);
+     
             int i;
             for (i = 0; i < dataset.Data.Count * (percentageOfTrainData / 100.0); i++)
             {
