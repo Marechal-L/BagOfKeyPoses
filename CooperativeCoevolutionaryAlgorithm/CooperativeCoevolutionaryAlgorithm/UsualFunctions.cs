@@ -22,6 +22,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Parser;
+using Validator;
+using BagOfKeyPoses;
+using Util;
+
+using DataType = Util.AssociativeArray<string, System.Collections.Generic.List<System.Collections.Generic.List<double[]>>>;
 
 namespace CooperativeCoevolutionaryAlgorithm
 {
@@ -267,6 +273,115 @@ namespace CooperativeCoevolutionaryAlgorithm
             {
                 node.recombineJoints(ref child, adult);
             }
+        }
+    }
+
+    class ValidationFunctions
+    {
+        /// <summary>
+        ///  Performs a training actor set validation
+        /// </summary>
+        public static ResultSet TwoFoldTrainingSet(string[] trainingSet, Dataset dataset, LearningParams learningParams, IndividualInstances individual, int nbRounds)
+        {
+            ResultSet result = new ResultSet(dataset.Labels);
+            DataType trainData = new DataType();
+            DataType testData = new DataType();
+
+            //string[] trainingSet = new string[] { "s01", "s03", "s05", "s07", "s09" };
+            string[] testingSet = new string[] { "s02", "s04", "s06", "s08", "s10" };
+
+            for (int i = 0; i < dataset.Data.Count; i++)
+            {
+                if (trainingSet.Contains(dataset.Data[i].Subject))
+                {
+                    if (individual.Instances[i])
+                    {
+                        trainData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+                    }
+                }
+                else
+                {
+                    testData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+                }
+            }
+
+            for (int i = 0; i < nbRounds; i++)
+            {
+                result.addResult(ValidationTest.crossValidationResultSet(learningParams, trainData, testData, false));
+                result.addResult(ValidationTest.crossValidationResultSet(learningParams, testData, trainData, false));
+            }
+
+            return result;
+            
+        }
+
+        /// <summary>
+        ///  Performs a simple cross validation at random
+        /// </summary>
+        public static ResultSet CrossValidation(double percentageOfTrainData, Dataset dataset, LearningParams learningParams, IndividualInstances individual, int nbRounds)
+        {
+            ResultSet result = new ResultSet(dataset.Labels);
+            DataType trainData = new DataType();
+            DataType testData = new DataType();
+
+            Shuffler.Shuffle(dataset.Data);
+            int i;
+            for (i = 0; i < dataset.Data.Count * (percentageOfTrainData / 100.0); i++)
+            {
+                if (individual.Instances[i])
+                    trainData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+                else
+                    testData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+            }
+
+            for (int j = i; j < dataset.Data.Count; j++)
+            {
+                if (individual.Instances[j])
+                    testData[dataset.Data[j].Label].Add(dataset.Data[j].Sequence);
+                else
+                    trainData[dataset.Data[j].Label].Add(dataset.Data[j].Sequence);
+            }
+
+            for (i = 0; i < nbRounds; i++)
+            {
+                result.addResult(ValidationTest.crossValidationResultSet(learningParams, trainData, testData, false));
+                result.addResult(ValidationTest.crossValidationResultSet(learningParams, testData, trainData, false));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        ///  Performs a leave one actor out validation
+        /// </summary>
+        public static ResultSet LeaveOneActorOut(Dataset dataset, LearningParams learningParams, IndividualInstances individual)
+        {
+            ResultSet result = new ResultSet(dataset.Labels);
+            DataType trainData = new DataType();
+            DataType testData = new DataType();
+
+            int i;
+            foreach (var subject in dataset.Subjects)
+            {
+                for (i = 0; i < dataset.Data.Count; i++)
+                {
+                    if (subject == dataset.Data[i].Subject)
+                    {
+                        if (individual.Instances[i])
+                        {
+                            trainData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+                        }
+                    }
+                    else
+                    {
+                        testData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+                    }
+                }
+
+                result.addResult(ValidationTest.crossValidationResultSet(learningParams, trainData, testData, false));
+            }
+
+            return result;
         }
     }
 }

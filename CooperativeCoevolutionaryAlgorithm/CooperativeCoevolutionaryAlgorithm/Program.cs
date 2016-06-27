@@ -17,6 +17,8 @@
 //There is the same parameter in Population.cs
 #define PARALLEL
 
+#define LOAO
+
 using System.Diagnostics;
 using System;
 using System.IO;
@@ -38,7 +40,7 @@ namespace CooperativeCoevolutionaryAlgorithm
     {
         public static Dataset realDataset;                 //Dataset generated from txt files.
 
-        public static int NB_VALIDATION_TESTS = 5;                  //Define the number of rounds per each validation test.
+        public static int NB_VALIDATION_TESTS = 1;                  //Define the number of rounds per each validation test.
         public static int NB_FEATURES = 20;                         //Number of features
         public static int DIM_FEATURES = 3;                         //Dimension of each feature
         public static int MAX_GENERATION_WITHOUT_CHANGE = 250;
@@ -67,7 +69,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             Individual.NB_INSTANCES = realDataset.Data.Count();
             IndividualParameters.DEFAULT_K = 8;
 
-            int populationSize = 10; 
+            int populationSize = 1; 
             int offspringSize = 1;
 
     #region Initialisation
@@ -88,13 +90,16 @@ namespace CooperativeCoevolutionaryAlgorithm
 
     #region First_Evaluation
             //Evaluate the fitness of each individual of each population
-            foreach (Population pop in array_populations)
+            /*foreach (Population pop in array_populations)
             {
                 Console.WriteLine("Evaluating the first generation");
                 pop.evaluateFitness();
                 Console.WriteLine();
                 pop.order(populationSize);
-            }
+            }*/
+
+
+            array_populations[2].evaluateFitness();
             Console.WriteLine(array_populations[2]);
     #endregion
 
@@ -241,14 +246,19 @@ namespace CooperativeCoevolutionaryAlgorithm
             {
                 IndividualInstances individual_instances = (IndividualInstances)individual;
 
-                DataType trainData, testData;
+                //result = ValidationFunctions.TwoFoldTrainingSet(new string[] { "s01", "s03", "s05", "s07", "s09" }, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
+                //result = ValidationFunctions.CrossValidation(50, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
+                result = ValidationFunctions.LeaveOneActorOut(realDataset, learning_params, individual_instances);
+
+
+                /*DataType trainData, testData;
                 InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
 
                 for (int i = 0; i < NB_VALIDATION_TESTS; i++)
                 {
                     result.addResult(ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false));
                     result.addResult(ValidationTest.crossValidationResultSet(learning_params, testData, trainData, false));
-                }
+                }*/
             }
 
             double old_f = individual.FitnessScore;
@@ -258,12 +268,13 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             double new_f = result.getAverage();
 
+            Console.WriteLine(result);
+
             if (new_f > old_f)
             {
                 individual.FitnessScore = new_f;
                 return true;
             }
-
             return false;
         }
 
@@ -291,15 +302,17 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             //individual_instances
             if(individual_instances != null)
-            { 
-                DataType trainData, testData;
-                InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
+            {
+                result = ValidationFunctions.TwoFoldTrainingSet(new string[] { "s01", "s03", "s05", "s07", "s09" }, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);  
 
-                for (int i = 0; i < NB_VALIDATION_TESTS; i++)
+                //DataType trainData, testData;
+                //InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
+
+                /*for (int i = 0; i < NB_VALIDATION_TESTS; i++)
                 {
                     result.addResult(ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false));
                     result.addResult(ValidationTest.crossValidationResultSet(learning_params, testData, trainData, false));
-                }
+                }*/
             }
             else 
             {
@@ -448,8 +461,10 @@ namespace CooperativeCoevolutionaryAlgorithm
         {
             trainData = new DataType();
             testData = new DataType();
-     
+
             int i;
+            /*
+
             for (i = 0; i < dataset.Data.Count * (percentageOfTrainData / 100.0); i++)
             {
                 if(individual.Instances[i])
@@ -465,6 +480,67 @@ namespace CooperativeCoevolutionaryAlgorithm
                 else
                     trainData[dataset.Data[j].Label].Add(dataset.Data[j].Sequence);
             }
+            */
+
+           
+#if LI
+            //Li - Training Set
+            string[] trainingSet = new string[] { "s01", "s03", "s05", "s07", "s09"};
+            string[] testingSet = new string[] { "s02", "s04", "s06", "s08", "s10" };
+
+            for (i = 0; i < dataset.Data.Count; i++)
+            {
+                if(trainingSet.Contains(dataset.Data[i].Subject))
+                { 
+                    if(individual.Instances[i])
+                    {
+                        trainData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+                    }
+                }
+                else
+                {
+                    testData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+                }
+            }
+#elif CROSS
+            //CrossValidation
+            Shuffler.Shuffle(dataset.Data);
+
+            for (i = 0; i < dataset.Data.Count * (percentageOfTrainData / 100.0); i++)
+            {
+                if (individual.Instances[i])
+                    trainData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+                else
+                    testData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+            }
+
+            for (int j = i; j < dataset.Data.Count; j++)
+            {
+                if (individual.Instances[j])
+                    testData[dataset.Data[j].Label].Add(dataset.Data[j].Sequence);
+                else
+                    trainData[dataset.Data[j].Label].Add(dataset.Data[j].Sequence);
+            }
+#elif LOAO
+            //LOAO
+            string subject = dataset.getRandomSubject();
+
+            for (i = 0; i < dataset.Data.Count; i++)
+            {
+                if (subject == dataset.Data[i].Subject)
+                {
+                    if (individual.Instances[i])
+                    {
+                        trainData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+                    }
+                }
+                else
+                {
+                    testData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
+                }
+            }
+#endif
+
         }
 
         #endregion
