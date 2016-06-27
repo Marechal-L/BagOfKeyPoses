@@ -60,6 +60,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             //Choose the dataset to load.
             //You can implement your own parser. If you already did it,
             //make sure to compile the BagOfKeYPoses_Library solution in release mode first to generate the new .dll file.
+            Console.WriteLine("Parsing dataset ...");
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             realDataset.normaliseSkeletons();
 
@@ -69,7 +70,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             Individual.NB_INSTANCES = realDataset.Data.Count();
             IndividualParameters.DEFAULT_K = 8;
 
-            int populationSize = 1; 
+            int populationSize = 10; 
             int offspringSize = 1;
 
     #region Initialisation
@@ -90,17 +91,13 @@ namespace CooperativeCoevolutionaryAlgorithm
 
     #region First_Evaluation
             //Evaluate the fitness of each individual of each population
-            /*foreach (Population pop in array_populations)
+            foreach (Population pop in array_populations)
             {
                 Console.WriteLine("Evaluating the first generation");
                 pop.evaluateFitness();
                 Console.WriteLine();
                 pop.order(populationSize);
-            }*/
-
-
-            array_populations[2].evaluateFitness();
-            Console.WriteLine(array_populations[2]);
+            }
     #endregion
 
     #region Evolutionary_Algorithm_Loop
@@ -246,19 +243,9 @@ namespace CooperativeCoevolutionaryAlgorithm
             {
                 IndividualInstances individual_instances = (IndividualInstances)individual;
 
-                //result = ValidationFunctions.TwoFoldTrainingSet(new string[] { "s01", "s03", "s05", "s07", "s09" }, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
+                result = ValidationFunctions.TwoFoldTrainingSet(new string[] { "s01", "s03", "s05", "s07", "s09" }, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
                 //result = ValidationFunctions.CrossValidation(50, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
-                result = ValidationFunctions.LeaveOneActorOut(realDataset, learning_params, individual_instances);
-
-
-                /*DataType trainData, testData;
-                InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
-
-                for (int i = 0; i < NB_VALIDATION_TESTS; i++)
-                {
-                    result.addResult(ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false));
-                    result.addResult(ValidationTest.crossValidationResultSet(learning_params, testData, trainData, false));
-                }*/
+                //result = ValidationFunctions.LeaveOneActorOut(realDataset, learning_params, individual_instances);
             }
 
             double old_f = individual.FitnessScore;
@@ -267,8 +254,6 @@ namespace CooperativeCoevolutionaryAlgorithm
                 result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, NB_VALIDATION_TESTS, false);
 
             double new_f = result.getAverage();
-
-            Console.WriteLine(result);
 
             if (new_f > old_f)
             {
@@ -303,16 +288,9 @@ namespace CooperativeCoevolutionaryAlgorithm
             //individual_instances
             if(individual_instances != null)
             {
-                result = ValidationFunctions.TwoFoldTrainingSet(new string[] { "s01", "s03", "s05", "s07", "s09" }, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);  
-
-                //DataType trainData, testData;
-                //InitTrainAndTestData(individual_instances, realDataset, 50, out trainData, out testData);
-
-                /*for (int i = 0; i < NB_VALIDATION_TESTS; i++)
-                {
-                    result.addResult(ValidationTest.crossValidationResultSet(learning_params, trainData, testData, false));
-                    result.addResult(ValidationTest.crossValidationResultSet(learning_params, testData, trainData, false));
-                }*/
+                result = ValidationFunctions.TwoFoldTrainingSet(new string[] { "s01", "s03", "s05", "s07", "s09" }, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
+                //result = ValidationFunctions.CrossValidation(50, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
+                //result = ValidationFunctions.LeaveOneActorOut(realDataset, learning_params, individual_instances);
             }
             else 
             {

@@ -197,8 +197,6 @@ namespace CooperativeCoevolutionaryAlgorithm
         }
     }
 
-    
-
     /// <summary>
     ///  Represents a tree node used for the joints recombination process.
     /// </summary>
