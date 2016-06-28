@@ -50,12 +50,17 @@ namespace EvolutionaryAlgorithm
         //Entry point of the evolutionary algorithm.
         static void Main(string[] args)
         {
-            timer.Start();
+            LogFilename = "Logs/" + LogFilename;
+            System.IO.Directory.CreateDirectory("Individuals");
+            System.IO.Directory.CreateDirectory("Logs");
+            System.IO.Directory.CreateDirectory("Config");
             File.Create(LogFilename).Close();
+            timer.Start();
 
             //Choose the dataset to load.
             //You can implement your own parser. If you already did it, 
             //make sure to compile the BagOfKeYPoses_Library solution in release mode first to generate the new .dll file.
+            Console.WriteLine("Parsing dataset ...");
             realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             realDataset.normaliseSkeletons();
 
@@ -65,22 +70,26 @@ namespace EvolutionaryAlgorithm
             int offspringSize = 20;
             int generations_without_change = 0;
             Individual individual, equalIndividual;
-
     
             //Create initial population
             Population population = new Population(populationSize, offspringSize, NB_FEATURES);
+            population.FirstGeneration = Population.FirstGenerationType.ONE_DEFAULT;
+            population.createFirstGeneration("Individuals/population.xml");
 
-    #region First_Evaluation
-            //Evaluate Fitness
-            Console.WriteLine("Evaluating the first generation");
-            population.evaluateFitness();
+   #region First_Evaluation
+            if(population.FirstGeneration != Population.FirstGenerationType.LOAD)
+            { 
+                //Evaluate Fitness
+                Console.WriteLine("Evaluating the first generation");
+                population.evaluateFitness();
 
-            //Order
-            population.order(populationSize);
+                //Order
+                population.order(populationSize);
+            }
+    #endregion
 
             Console.WriteLine("\nFirst Generation : ");
             Console.WriteLine(population);
-    #endregion
             
     #region Evolutionary_Algorithm_Loop
             //Main loop of the algorithm
@@ -162,6 +171,7 @@ namespace EvolutionaryAlgorithm
                     generations_without_change = 0;
                     Console.WriteLine("\n******* NEW BEST : " + prev_best_fitness + "*******");
                     addRoundToLog(generationNumber, population.Generation[0]);
+                    population.ToXML().Save("Individuals/population.xml");
                 }
                 else
                 {
@@ -195,7 +205,6 @@ namespace EvolutionaryAlgorithm
             writer.Write(s);
             writer.Close();
 
-            System.IO.Directory.CreateDirectory("Individuals");
             population.Generation[0].ToXML().Save("Individuals/BestIndividual.xml");
     #endregion
 

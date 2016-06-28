@@ -16,9 +16,6 @@
 
 #define PARALLEL
 
-//Define it to start the algorithm with one individual with all default parameters values in each population.
-#define ONE_DEFAULT_INDIVIDUAL
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,8 +32,11 @@ namespace EvolutionaryAlgorithm
     /// </summary>
     class Population
     {
+        public enum FirstGenerationType { RANDOM = 0, ONE_DEFAULT = 1, LOAD = 2 };
+
         public Individual[] Generation;
         public int PopulationSize, OffspringSize;
+        public FirstGenerationType FirstGeneration = FirstGenerationType.RANDOM;
 
         public Population(int populationSize, int offspringSize, int nbOfFeatures)
         {
@@ -44,21 +44,37 @@ namespace EvolutionaryAlgorithm
             OffspringSize = offspringSize;
 
             Individual.NB_FEATURES = nbOfFeatures;
-            createFirstGeneration();
         }
 
         public void createFirstGeneration()
         {
-            Generation = new Individual[PopulationSize + OffspringSize];
-            for (int i = 0; i < PopulationSize; i++)
+            if (FirstGeneration == FirstGenerationType.RANDOM || FirstGeneration == FirstGenerationType.ONE_DEFAULT)
             {
-                Generation[i] = new Individual();
+                Generation = new Individual[PopulationSize + OffspringSize];
+                for (int i = 0; i < PopulationSize; i++)
+                {
+                    Generation[i] = new Individual();
+                }
+
+                if (FirstGeneration == FirstGenerationType.ONE_DEFAULT)
+                    Generation[0] = new Individual(0);
+            }
+        }
+
+
+        //firstGeneration == FirstGeneration.LOAD
+        public void createFirstGeneration(string xmlFileName)
+        {
+            if (FirstGeneration != FirstGenerationType.LOAD)
+            {
+                createFirstGeneration();
+                return;
             }
 
-#if ONE_DEFAULT_INDIVIDUAL
-            Generation[0] = new Individual("");
-#endif
-
+            Generation = new Individual[PopulationSize + OffspringSize];
+            XmlDocument doc = new XmlDocument();
+            doc.Load(xmlFileName);
+            LoadXML(doc);
         }
 
         /// <summary>
@@ -139,6 +155,35 @@ namespace EvolutionaryAlgorithm
             }
             return s;
         }
+
+        public XmlDocument ToXML()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<population></population>");
+
+            for (int i = 0; i < PopulationSize; i++)
+            {
+                Individual indi = Generation[i];
+                if (indi == null) continue;
+                XmlDocument indi_doc = indi.ToXML();
+                doc.DocumentElement.AppendChild(doc.ImportNode(indi_doc.DocumentElement, true));
+            }
+            return doc;
+        }
+
+        public void LoadXML(XmlDocument doc)
+        {
+            XmlNodeList nodeList = doc.GetElementsByTagName("individual");
+
+            for (int i = 0; i < PopulationSize; i++)
+            {
+                Individual individual = new Individual();
+                XmlDocument indi_doc = new XmlDocument();
+                indi_doc.LoadXml("<individual>" + nodeList[i].InnerXml + "</individual>");
+                individual.LoadXML(indi_doc);
+                Generation[i] = individual;
+            }
+        }
     }
 
     /// <summary>
@@ -167,7 +212,7 @@ namespace EvolutionaryAlgorithm
             }
         }
 
-        public Individual(string s)
+        public Individual(int k)
         {
             Genes = new bool[NB_FEATURES];
             for (int i = 0; i < Genes.Length; i++)

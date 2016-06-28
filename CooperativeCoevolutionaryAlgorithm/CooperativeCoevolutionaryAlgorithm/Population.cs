@@ -16,10 +16,6 @@
 
 #define PARALLEL
 
-//Define it to start the algorithm with one individual with all default parameters values in each population.
-#define ONE_DEFAULT_INDIVIDUAL
-
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,11 +32,13 @@ namespace CooperativeCoevolutionaryAlgorithm
     /// </summary>
     class Population
     {
+        public enum FirstGenerationType { RANDOM = 0, ONE_DEFAULT = 1, LOAD = 2 };
         public enum IndividualType { FEATURES = 0, PARAMETERS = 1, INSTANCES = 2 };
 
         public Individual[] Generation;
         public int PopulationSize, OffspringSize;
         public IndividualType PopulationType;
+        public FirstGenerationType FirstGeneration = FirstGenerationType.RANDOM;
 
         public Population(int populationSize, int offspringSize)
         {
@@ -48,28 +46,49 @@ namespace CooperativeCoevolutionaryAlgorithm
             OffspringSize = offspringSize;
         }
 
+
         public void createFirstGeneration(IndividualType type)
         {
             PopulationType = type;
-            Generation = new Individual[PopulationSize + OffspringSize];
-            for (int i = 0; i < PopulationSize + OffspringSize; i++)
+            if (FirstGeneration == FirstGenerationType.RANDOM || FirstGeneration == FirstGenerationType.ONE_DEFAULT)
             {
-                switch (type)
+                Generation = new Individual[PopulationSize + OffspringSize];
+                for (int i = 0; i < PopulationSize + OffspringSize; i++)
                 {
-                    case IndividualType.PARAMETERS: Generation[i] = new IndividualParameters(); break;
-                    case IndividualType.FEATURES: Generation[i] = new IndividualFeatures(); break;
-                    case IndividualType.INSTANCES: Generation[i] = new IndividualInstances(); break;
+                    switch (type)
+                    {
+                        case IndividualType.PARAMETERS: Generation[i] = new IndividualParameters(); break;
+                        case IndividualType.FEATURES: Generation[i] = new IndividualFeatures(); break;
+                        case IndividualType.INSTANCES: Generation[i] = new IndividualInstances(); break;
+                    }
+                }
+
+                if (FirstGeneration == FirstGenerationType.ONE_DEFAULT)
+                {
+                    switch (type)
+                    {
+                        case IndividualType.PARAMETERS: Generation[0] = new IndividualParameters(0); break;
+                        case IndividualType.FEATURES: Generation[0] = new IndividualFeatures(0); break;
+                        case IndividualType.INSTANCES: Generation[0] = new IndividualInstances(0); break;
+                    }
                 }
             }
+        }
 
-#if ONE_DEFAULT_INDIVIDUAL
-            switch (type)
+        //firstGeneration == FirstGeneration.LOAD
+        public void createFirstGeneration(IndividualType type, string xmlFileName)
+        {
+            if (FirstGeneration != FirstGenerationType.LOAD)
             {
-                case IndividualType.PARAMETERS: Generation[0] = new IndividualParameters(""); break;
-                case IndividualType.FEATURES: Generation[0] = new IndividualFeatures(""); break;
-                case IndividualType.INSTANCES: Generation[0] = new IndividualInstances(""); break;
+                createFirstGeneration(type);
+                return;
             }
-#endif
+
+            PopulationType = type;
+            Generation = new Individual[PopulationSize + OffspringSize];
+            XmlDocument doc = new XmlDocument();
+            doc.Load(xmlFileName);
+            LoadXML(doc);
         }
 
         /// <summary>
@@ -149,6 +168,41 @@ namespace CooperativeCoevolutionaryAlgorithm
                 s += "" + Generation[i] + "\n";
             }
             return s;
+        }
+
+        public XmlDocument ToXML()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<population></population>");
+
+            for (int i = 0; i < PopulationSize; i++)
+            {
+                Individual indi = Generation[i];
+                if (indi == null) continue;
+                XmlDocument indi_doc = indi.ToXML();
+                doc.DocumentElement.AppendChild(doc.ImportNode(indi_doc.DocumentElement, true));
+            }
+            return doc;
+        }
+
+        public void LoadXML(XmlDocument doc)
+        {
+            XmlNodeList nodeList = doc.DocumentElement.ChildNodes;
+
+            int i = 0;
+            foreach (XmlElement item in nodeList)
+            {
+                XmlDocument indi_doc = new XmlDocument();
+                indi_doc.LoadXml("<individual>" + item.InnerXml + "</individual>");
+                switch (item.Name)
+                {
+                    case "IndividualParameters": Generation[i] = new IndividualParameters(); break;
+                    case "IndividualFeatures": Generation[i] = new IndividualFeatures(); break;
+                    case "IndividualInstances": Generation[i] = new IndividualInstances(); break;
+                }
+                Generation[i].LoadXML(indi_doc);
+                i++;
+            }
         }
     }
 
@@ -234,7 +288,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
         }
 
-        public IndividualFeatures(string s)
+        public IndividualFeatures(int k)
         {
             Features = new bool[NB_FEATURES];
             for (int i = 0; i < Features.Length; i++)
@@ -392,7 +446,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
         }
 
-        public IndividualParameters(string s)
+        public IndividualParameters(int k)
         {
             K = new int[NB_LABELS];
             for (int i = 0; i < K.Length; i++)
@@ -559,7 +613,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
         }
 
-        public IndividualInstances(string s)
+        public IndividualInstances(int k)
         {
             Instances = new bool[NB_INSTANCES];
             for (int i = 0; i < Instances.Length; i++)

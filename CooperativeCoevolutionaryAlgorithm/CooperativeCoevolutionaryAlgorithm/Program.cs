@@ -54,8 +54,12 @@ namespace CooperativeCoevolutionaryAlgorithm
         //Entry point of the evolutionary algorithm.
         static void Main(string[] args)
         {
-            timer.Start();
+            LogFilename = "Logs/" + LogFilename;
+            System.IO.Directory.CreateDirectory("Individuals");
+            System.IO.Directory.CreateDirectory("Logs");
+            System.IO.Directory.CreateDirectory("Config");
             File.Create(LogFilename).Close();
+            timer.Start();
 
             //Choose the dataset to load.
             //You can implement your own parser. If you already did it,
@@ -70,7 +74,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             Individual.NB_INSTANCES = realDataset.Data.Count();
             IndividualParameters.DEFAULT_K = 8;
 
-            int populationSize = 10; 
+            int populationSize = 3; 
             int offspringSize = 1;
 
     #region Initialisation
@@ -80,23 +84,29 @@ namespace CooperativeCoevolutionaryAlgorithm
             Population[] array_populations = new Population[3];
 
             array_populations[0] = new Population(populationSize, offspringSize);
-            array_populations[0].createFirstGeneration(Population.IndividualType.FEATURES);
+            array_populations[0].FirstGeneration = Population.FirstGenerationType.ONE_DEFAULT;
+            array_populations[0].createFirstGeneration(Population.IndividualType.FEATURES, "Individuals/population_FEATURES.xml");
 
             array_populations[1] = new Population(populationSize, offspringSize);
-            array_populations[1].createFirstGeneration(Population.IndividualType.PARAMETERS);
+            array_populations[1].FirstGeneration = Population.FirstGenerationType.ONE_DEFAULT;
+            array_populations[1].createFirstGeneration(Population.IndividualType.PARAMETERS, "Individuals/population_PARAMETERS.xml");
 
             array_populations[2] = new Population(populationSize, offspringSize);
-            array_populations[2].createFirstGeneration(Population.IndividualType.INSTANCES);
+            array_populations[2].FirstGeneration = Population.FirstGenerationType.ONE_DEFAULT;
+            array_populations[2].createFirstGeneration(Population.IndividualType.INSTANCES, "Individuals/population_INSTANCES.xml");
     #endregion
 
     #region First_Evaluation
             //Evaluate the fitness of each individual of each population
             foreach (Population pop in array_populations)
             {
-                Console.WriteLine("Evaluating the first generation");
-                pop.evaluateFitness();
-                Console.WriteLine();
-                pop.order(populationSize);
+                if(pop.FirstGeneration != Population.FirstGenerationType.LOAD)
+                { 
+                    Console.WriteLine("Evaluating the first generation");
+                    pop.evaluateFitness();
+                    Console.WriteLine();
+                    pop.order(populationSize);
+                }
             }
     #endregion
 
@@ -156,8 +166,11 @@ namespace CooperativeCoevolutionaryAlgorithm
                     generations_without_change = 0;
 
                     Console.WriteLine(best_features.result);
-
                     addRoundToLog(generationNumber, (IndividualFeatures)best_features, (IndividualParameters)best_parameters, (IndividualInstances)best_instances);
+                    foreach (Population pop in array_populations)
+                    {
+                        pop.ToXML().Save("Individuals/population_" + pop.PopulationType.ToString() + ".xml");
+                    }
                 }
                 else
                 {
