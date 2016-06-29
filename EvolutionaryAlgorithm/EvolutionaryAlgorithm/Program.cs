@@ -170,8 +170,11 @@ namespace EvolutionaryAlgorithm
                     prev_best_fitness = population.Generation[0].FitnessScore;
                     generations_without_change = 0;
                     Console.WriteLine("\n******* NEW BEST : " + prev_best_fitness + "*******");
+
+                    Console.WriteLine("Saving population and results. DO NOT INTERRUPT THE PROGRAM.");
                     addRoundToLog(generationNumber, population.Generation[0]);
                     population.ToXML().Save("Individuals/population.xml");
+                    Console.WriteLine("Saving terminated.");
                 }
                 else
                 {

@@ -74,7 +74,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             Individual.NB_INSTANCES = realDataset.Data.Count();
             IndividualParameters.DEFAULT_K = 8;
 
-            int populationSize = 3; 
+            int populationSize = 10; 
             int offspringSize = 1;
 
     #region Initialisation
@@ -166,11 +166,13 @@ namespace CooperativeCoevolutionaryAlgorithm
                     generations_without_change = 0;
 
                     Console.WriteLine(best_features.result);
+                    Console.WriteLine("Saving population and results. DO NOT INTERRUPT THE PROGRAM.");
                     addRoundToLog(generationNumber, (IndividualFeatures)best_features, (IndividualParameters)best_parameters, (IndividualInstances)best_instances);
                     foreach (Population pop in array_populations)
                     {
                         pop.ToXML().Save("Individuals/population_" + pop.PopulationType.ToString() + ".xml");
                     }
+                    Console.WriteLine("Saving terminated.");
                 }
                 else
                 {
@@ -206,7 +208,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             string s = "Best Individuals : \r\n" + best_features + "\r\n" + best_parameters + "\r\n" + best_instances + "\r\n" + best_features.result;
 
             Console.WriteLine(s);
-            string filename = "GeneticResult.log";
+            string filename = "Logs/GeneticResult.log";
             System.IO.File.Create(filename).Close();
             System.IO.StreamWriter writer = new System.IO.StreamWriter(filename);
             writer.Write(s);
