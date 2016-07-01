@@ -39,7 +39,7 @@
 *       
 *      Take a look at the README for more informations. 
 */
-#define TWOFOLDSET
+#define LOSO
 
 
 using System;
@@ -125,7 +125,7 @@ namespace SampleUsage
             filename += "TWOFOLD";
 #endif
 #if TWOFOLDSET
-            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },1);
+            result = ValidationTest.twoFoldActorsTrainingSet(dataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" },10);
             Console.Write("twoFoldActorsTrainingSet : ");
             filename += "TWOFOLDSET";
 #endif
