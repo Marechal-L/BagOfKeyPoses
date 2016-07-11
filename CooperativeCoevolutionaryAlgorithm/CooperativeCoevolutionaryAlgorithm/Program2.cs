@@ -28,18 +28,22 @@ using DataType = Util.AssociativeArray<string, System.Collections.Generic.List<S
 namespace CooperativeCoevolutionaryAlgorithm
 {
     /// <summary>
-    /// Just a simple program to run a validation with specific individuals
+    /// A simple program to run a validation with specific individuals
     /// </summary>
     class Program2
     {
+
+        public static int NB_VALIDATION_TESTS = 5;                  //Define the number of rounds per each validation test.
         public static int NB_FEATURES = 20;
         public static int DIM_FEATURES = 3;
-        public static string FeaturesIndividualFile = "Individuals/BestIndividualFeatures_97.xml";
-        public static string ParametersIndividualFile = "Individuals/BestIndividualParameters_97.xml";
-        public static string InstancesIndividualFile = "Individuals/BestIndividualInstances_97.xml";
+        public static string FeaturesIndividualFile = "Individuals/BestIndividualFeatures.xml";
+        public static string ParametersIndividualFile = "Individuals/BestIndividualParameters.xml";
+        public static string InstancesIndividualFile = "Individuals/BestIndividualInstances.xml";
 
         static void Main(string[] args)
         {
+            FeaturesIndividualFile = "Individuals/3Joints.xml";
+
             Program.realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
             Program.realDataset.normaliseSkeletons();
             XmlDocument doc = new XmlDocument();
@@ -57,6 +61,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             individual_instances.LoadXML(doc);
 
             evaluateFitness(individual_features, individual_parameters, individual_instances);
+            //evaluateFitness(individual_features);
 
             Console.ReadKey();
         }
@@ -93,14 +98,11 @@ namespace CooperativeCoevolutionaryAlgorithm
             {
                 IndividualInstances individual_instances = (IndividualInstances)individual;
 
-                DataType trainData, testData;
-                Program.InitTrainAndTestData(individual_instances, Program.realDataset, 50, out trainData, out testData);
-
-                result = ValidationTest.crossValidationResultSet(learning_params, trainData, testData);
+                result = ValidationFunctions.TwoFoldTrainingSet(new string[] { "s01", "s03", "s05", "s07", "s09" }, modifiedDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
             }
 
             if (individual.GetType() != typeof(IndividualInstances))
-                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 10);
+                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 2);
 
             Console.WriteLine(result);
 
@@ -132,17 +134,11 @@ namespace CooperativeCoevolutionaryAlgorithm
             //individual_instances
             if (individual_instances != null)
             {
-                DataType trainData, testData;
-                Program.InitTrainAndTestData(individual_instances, Program.realDataset, 50, out trainData, out testData);
-                for (int i = 0; i < 10; i++)
-                {
-                    result.addResult( ValidationTest.crossValidationResultSet(learning_params, trainData, testData));
-                    result.addResult( ValidationTest.crossValidationResultSet(learning_params, testData, trainData));
-                }
+                result = ValidationFunctions.TwoFoldTrainingSet(new string[] { "s01", "s03", "s05", "s07", "s09" }, modifiedDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
             }
             else
             {
-                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 10);
+                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 2);
             }
 
             Console.WriteLine(result);

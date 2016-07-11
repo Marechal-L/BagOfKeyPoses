@@ -25,7 +25,7 @@
 *       
 *      Take a look at the README for more informations. 
 */
-#define MSR
+#define WEIZMANN
 
 /*
 *   Define values for the Validation methods
@@ -39,7 +39,7 @@
 *       
 *      Take a look at the README for more informations. 
 */
-#define LOSO
+#define TWOFOLDSQ
 
 
 using System;
@@ -115,7 +115,7 @@ namespace SampleUsage
             filename += "LOAOR";
 #endif
 #if TWOFOLDSQ
-            result = ValidationTest.twoFoldOnSequences(dataset, learning_params, 50, 2);
+            result = ValidationTest.twoFoldOnSequences(dataset, learning_params, 50, 10);
             Console.Write("twoFoldOnSequences : ");
             filename += "TWOFOLDSQ";
 #endif
@@ -167,8 +167,8 @@ namespace SampleUsage
             Parser.ContourSelection.NUM_PIECES = 14;
 
             Console.WriteLine("Dataset loading...");
-            //Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../datasets/Weizmann/Weizmann_contours", ' ');
-            Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../datasets/Weizmann/Weizmann_contours - without skip", ' ');
+            Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../datasets/Weizmann/Weizmann_contours", ' ');
+            //Dataset dataset = DatasetParser.loadDatasetSilhouette("../../../datasets/Weizmann/Weizmann_contours - without skip", ' ');
             
             //Init learning_params
             learning_params = new LearningParams();

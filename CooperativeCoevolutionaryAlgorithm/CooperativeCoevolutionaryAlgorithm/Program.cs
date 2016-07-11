@@ -17,7 +17,7 @@
 //There is the same parameter in Population.cs
 #define PARALLEL
 
-#define LOAO
+#define CROSS
 
 using System.Diagnostics;
 using System;
@@ -40,7 +40,7 @@ namespace CooperativeCoevolutionaryAlgorithm
     {
         public static Dataset realDataset;                 //Dataset generated from txt files.
 
-        public static int NB_VALIDATION_TESTS = 1;                  //Define the number of rounds per each validation test.
+        public static int NB_VALIDATION_TESTS = 5;                  //Define the number of rounds per each validation test.
         public static int NB_FEATURES = 20;                         //Number of features
         public static int DIM_FEATURES = 3;                         //Dimension of each feature
         public static int MAX_GENERATION_WITHOUT_CHANGE = 250;
@@ -448,92 +448,6 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
 
             return seq;
-        }
-
-        public static void InitTrainAndTestData(IndividualInstances individual, Dataset dataset, int percentageOfTrainData, out DataType trainData, out DataType testData)
-        {
-            trainData = new DataType();
-            testData = new DataType();
-
-            int i;
-            /*
-
-            for (i = 0; i < dataset.Data.Count * (percentageOfTrainData / 100.0); i++)
-            {
-                if(individual.Instances[i])
-                    trainData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
-                else
-                    testData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
-            }
-
-            for (int j = i; j < dataset.Data.Count; j++)
-            {
-                if (individual.Instances[j])
-                    testData[dataset.Data[j].Label].Add(dataset.Data[j].Sequence);
-                else
-                    trainData[dataset.Data[j].Label].Add(dataset.Data[j].Sequence);
-            }
-            */
-
-           
-#if LI
-            //Li - Training Set
-            string[] trainingSet = new string[] { "s01", "s03", "s05", "s07", "s09"};
-            string[] testingSet = new string[] { "s02", "s04", "s06", "s08", "s10" };
-
-            for (i = 0; i < dataset.Data.Count; i++)
-            {
-                if(trainingSet.Contains(dataset.Data[i].Subject))
-                { 
-                    if(individual.Instances[i])
-                    {
-                        trainData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
-                    }
-                }
-                else
-                {
-                    testData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
-                }
-            }
-#elif CROSS
-            //CrossValidation
-            Shuffler.Shuffle(dataset.Data);
-
-            for (i = 0; i < dataset.Data.Count * (percentageOfTrainData / 100.0); i++)
-            {
-                if (individual.Instances[i])
-                    trainData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
-                else
-                    testData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
-            }
-
-            for (int j = i; j < dataset.Data.Count; j++)
-            {
-                if (individual.Instances[j])
-                    testData[dataset.Data[j].Label].Add(dataset.Data[j].Sequence);
-                else
-                    trainData[dataset.Data[j].Label].Add(dataset.Data[j].Sequence);
-            }
-#elif LOAO
-            //LOAO
-            string subject = dataset.getRandomSubject();
-
-            for (i = 0; i < dataset.Data.Count; i++)
-            {
-                if (subject == dataset.Data[i].Subject)
-                {
-                    if (individual.Instances[i])
-                    {
-                        trainData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
-                    }
-                }
-                else
-                {
-                    testData[dataset.Data[i].Label].Add(dataset.Data[i].Sequence);
-                }
-            }
-#endif
-
         }
 
         #endregion

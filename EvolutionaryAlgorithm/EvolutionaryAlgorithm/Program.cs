@@ -37,7 +37,7 @@ namespace EvolutionaryAlgorithm
     {
         public static Dataset realDataset;                  //Dataset loaded from txt files.
 
-        public static int NB_VALIDATION_TESTS = 5;                  //Define the number of rounds per each validation test.
+        public static int NB_VALIDATION_TESTS = 2;                  //Define the number of rounds per each validation test.
         static int NB_FEATURES = 20;                                //Number of features
         static int DIM_FEATURES = 3;                                //Dimension of each feature
         static int MAX_GENERATION_WITHOUT_CHANGE = 100;     
