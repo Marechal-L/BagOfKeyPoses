@@ -230,7 +230,7 @@ namespace CooperativeCoevolutionaryAlgorithm
         /// Evaluate the fitness score of the given individual
         /// </summary>
         /// <returns>Boolean representing if the score is better or not</returns> 
-        public static bool evaluateFitness(Individual individual)
+        public static bool evaluateFitness(Individual individual, bool verbose = false)
         {
             ResultSet result = new ResultSet(realDataset.Labels);
             Dataset modifiedDataset = null;
@@ -270,6 +270,9 @@ namespace CooperativeCoevolutionaryAlgorithm
 
             double new_f = result.getAverage();
 
+            if (verbose)
+                Console.WriteLine(result);
+
             if (new_f > old_f)
             {
                 individual.FitnessScore = new_f;
@@ -282,7 +285,7 @@ namespace CooperativeCoevolutionaryAlgorithm
         /// Evaluate the fitness score of the coevolutionary algorithm by merging all individuals
         /// </summary>
         /// <returns>Boolean representing if the score is better or not</returns> 
-        public static double evaluateFitness(IndividualFeatures individual_features, IndividualParameters individual_parameters, IndividualInstances individual_instances)
+        public static double evaluateFitness(IndividualFeatures individual_features, IndividualParameters individual_parameters, IndividualInstances individual_instances, bool verbose = false)
         {
             ResultSet result = new ResultSet(realDataset.Labels);
             Dataset modifiedDataset = null;
@@ -303,9 +306,9 @@ namespace CooperativeCoevolutionaryAlgorithm
             //individual_instances
             if(individual_instances != null)
             {
-                result = ValidationFunctions.TwoFoldTrainingSet(new string[] { "s01", "s03", "s05", "s07", "s09" }, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
-                //result = ValidationFunctions.CrossValidation(50, realDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
-                //result = ValidationFunctions.LeaveOneActorOut(realDataset, learning_params, individual_instances);
+                result = ValidationFunctions.TwoFoldTrainingSet(new string[] { "s01", "s03", "s05", "s07", "s09" }, modifiedDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
+                //result = ValidationFunctions.CrossValidation(50, modifiedDataset, learning_params, individual_instances, NB_VALIDATION_TESTS);
+                //result = ValidationFunctions.LeaveOneActorOut(modifiedDataset, learning_params, individual_instances);
             }
             else 
             {
@@ -358,6 +361,10 @@ namespace CooperativeCoevolutionaryAlgorithm
                         }
                         break;
             }
+
+            if (verbose)
+                Console.WriteLine(result);
+
             return result.getAverage();
         }
     #endregion

@@ -42,6 +42,7 @@ namespace CooperativeCoevolutionaryAlgorithm
 
         static void Main(string[] args)
         {
+            ValidationTest.TRAINING = ValidationTest.TRAINING_MODES.CLASSIC;
             FeaturesIndividualFile = "Individuals/3Joints.xml";
 
             Program.realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
@@ -60,8 +61,8 @@ namespace CooperativeCoevolutionaryAlgorithm
             doc.Load(InstancesIndividualFile);
             individual_instances.LoadXML(doc);
 
-            evaluateFitness(individual_features, individual_parameters, individual_instances);
-            //evaluateFitness(individual_features);
+            Program.evaluateFitness(individual_features, individual_parameters, individual_instances, true);
+            Program.evaluateFitness(individual_features);
 
             Console.ReadKey();
         }
@@ -138,7 +139,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             }
             else
             {
-                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, 2);
+                result = ValidationTest.twoFoldActorsTrainingSet(modifiedDataset, learning_params, new string[] { "s01", "s03", "s05", "s07", "s09" }, NB_VALIDATION_TESTS);
             }
 
             Console.WriteLine(result);
