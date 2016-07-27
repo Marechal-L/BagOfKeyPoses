@@ -65,7 +65,7 @@ namespace CooperativeCoevolutionaryAlgorithm
             //You can implement your own parser. If you already did it,
             //make sure to compile the BagOfKeYPoses_Library solution in release mode first to generate the new .dll file.
             Console.WriteLine("Parsing dataset ...");
-            realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS1", ' ');
+            realDataset = DatasetParser.loadDatasetSkeleton(NB_FEATURES, "../../../../BagOfKeyPoses_Library/datasets/MSR/AS2", ' ');
             realDataset.normaliseSkeletons();
 
             //Parameters of the evolutionary algorithm
